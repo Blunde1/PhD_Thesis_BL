@@ -68,10 +68,11 @@
 \renewcommand{\cftchappagefont}{\fontsize{11}{13}\normalfont} % TOC page numbers
 \renewcommand{\cftchapleader}{\cftdotfill{0.5}} % Dot distance
 \cftsetpnumwidth{0.6em} % Distance between last dot and numbers
-\setcounter{tocdepth}{0} % TOC depth
+\setcounter{tocdepth}{1} % TOC depth
 \setlength\cftbeforetoctitleskip{-20pt} % Vertical distance before TOC title
 \setlength\cftaftertoctitleskip{0pt} % Vertical distance from TOC title to first entry
-\renewcommand\cftchapafterpnum{\vskip-5pt} % Vertical space between TOC entries
+%\renewcommand\cftchapafterpnum{\vskip-5pt} % Vertical space between TOC entries
+%\renewcommand\cftsecafterpnum{\vskip15pt}
 
 % Insert TOC
 \newcommand\listofappendices{\@starttoc{app}}

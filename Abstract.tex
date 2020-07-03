@@ -5,6 +5,41 @@
 \hyphenpenalty=10000
 \hbadness=10000
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce iaculis nulla in est pellentesque ultrices. Nulla ex eros, iaculis vel malesuada vitae, iaculis eu mauris. Nullam sed bibendum erat. Cras tristique augue quis risus egestas porta. Aenean gravida quam congue, malesuada massa nec, vestibulum neque. Suspendisse potenti. Pellentesque non enim efficitur, lobortis ex ac, pulvinar sem. Cras sed velit tincidunt, pharetra elit a, pretium nunc. Donec imperdiet sem a nunc porttitor, non elementum ipsum blandit. Vivamus imperdiet ipsum quis justo gravida blandit. Vivamus sed mauris sed urna maximus pretium. Donec luctus placerat turpis. Praesent dui augue, viverra ultrices lacinia ac, efficitur quis nisi. Nullam pulvinar orci eu lacus mollis, molestie placerat tortor posuere.
+Adaptivity of methods are important!
 
-Etiam auctor nisi eget luctus posuere. Vestibulum eu lorem aliquet, suscipit erat ac, scelerisque magna. Vestibulum nisi nibh, fringilla dapibus vulputate eu, pulvinar at mi. Integer nec eleifend metus. Mauris aliquam ut sem vitae gravida. Sed lorem nunc, posuere ac imperdiet non, ultricies id eros. In pretium, nibh nec rhoncus vestibulum, mi quam ultrices mauris, sed scelerisque sem leo nec leo.
+
+
+%
+%%Saddlepoint adjusted inversion of characteristic functions
+%\insertToPaperList{I}{Lunde, Berent Ånund Strømnes, Tore Selland Kleppe, and Hans Julius Skaug (2020).}{\PaperTitleOne}{Journal of Journals}{ 57}{, 80-93.}
+%
+%For certain types of statistical models, the characteristic function (Fourier transform) is available in closed form, whereas the probability density function has an intractable form, typically as an infinite sum of probability weighted densities. Important such examples include solutions of stochastic differential equations with jumps, the Tweedie model, and Poisson mixture models. We propose a novel and general numerical method for retrieving the probability density function from the characteristic function. Unlike methods based on direct application of quadrature to the inverse Fourier transform, the proposed method allows accurate evaluation of the log-probability density function arbitrarily far out in the tail. Moreover, unlike saddlepoint approximations, the proposed methodology can be made arbitrarily accurate. Owing to these properties, the proposed method is computationally stable and very accurate under log-likelihood optimisation. The method is illustrated for a normal variance-mean mixture, and in an application of maximum likelihood estimation to a jump diffusion model for financial data.
+%
+%
+%%An information criterion for automatic gradient tree boosting
+%\insertToPaperList{II}{Lunde, Berent Ånund Strømnes, Tore Selland Kleppe, and Hans Julius Skaug (2020).}{\PaperTitleTwo}{To be submitted
+%	for publication in Journal of Journals.}{}{}
+%
+%An information theoretic approach to learning the complexity of CART trees and the number of trees in gradient tree boosting is proposed.
+%The optimism (test loss minus training loss) of the greedy leaf splitting procedure is shown to be the maximum of a Cox-Ingersoll-Ross process, from which a generalization-error based information criterion is formed. The proposed procedure allows fast local model selection without cross validation based hyper parameter tuning, and hence efficient and automatic comparison among the large number of models performed during each boosting iteration.
+%Relative to XGBoost, speedups on numerical experiments ranges from around 10 to about 1400, at similar predictive-power measured in terms of test-loss.
+%
+%
+%%aGTBoost: Adaptive and Automatic Gradient Tree Boosting Computations
+%\insertToPaperList{III}{Lunde, Berent Ånund Strømnes, Tore Selland Kleppe, and Hans Julius Skaug (2020).}{\PaperTitleThree}{To be submitted
+%	for publication in Journal of Journals.}{}{}
+%
+%aGTBoost is an R package implementing fast gradient 
+%tree boosting computations in a manner similar to other established packages such 
+%as the xgboost and LightGBM packages, but with significant decreases in computation time and 
+%the mathematical and technical knowledge imposed on the user. 
+%The user need only pass a response vector and a design matrix, and define
+%the type of problem through the choice of loss function, selected from a pre-defined list of possibilities.
+%The package automatically takes care of split no-split decisions and selects the number of trees
+%in the gradient tree boosting ensemble, i.e. aGTBoost adapts the complexity of the ensemble automatically
+%to the information in the data passed by the user.
+%All of this is done on-line during training of the ensemble, which is made possible 
+%by utilizing developments in information theory for tree algorithms -cite-.
+%aGTBoost also comes with a feature importance function that calculates with respect to 
+%approximate generalization loss, thus eliminating the common practice of inserting noise features, and a useful model validation function that performs the Kolmogorov-Smirnov test on the learned distribution.
+

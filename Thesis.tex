@@ -1,16 +1,25 @@
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage{Thesis_template}
 
-\newcommand\PaperTitleOne{The First Paper}
-\newcommand\PaperTitleTwo{The Second Paper}
-\newcommand\PaperTitleThree{The Third Paper}
-\newcommand\PaperTitleFour{The Fourth Paper}
+\newcommand\PaperTitleOne{Saddlepoint adjusted inversion of characteristic functions}
+\newcommand\PaperTitleTwo{An information criterion for automatic gradient tree boosting}
+\newcommand\PaperTitleThree{aGTBoost: Adaptive and Automatic Gradient Tree Boosting Computations}
+%\newcommand\PaperTitleFour{The Fourth Paper}
+
+%\usepackage{amsthm}
+%\theoremstyle{definition}
+%\newtheorem{exmp}{Example}[section]
+
+%\usepackage{amsmath}
+\newtheorem{Example}{Example}[section]
 
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%% TITLE PAGE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Very long and complicated\linebreak{}title that requires linebreak,\linebreak{}with economic applications}
-\author{Your Name}
+\title{Information in Local Curvature:\linebreak{}
+	Three Papers on Adaptive Methods\linebreak{}
+	in Computational Statistics}
+\author{Berent Ånund Strømnes Lunde}
 \year{2020}
 \faculty{Faculty of Science and Technology}
 \department{Department of Mathematics and Physics}
@@ -31,13 +40,19 @@
 
 \includePage{Preface}{Preface}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% ACKNOWLEDGEMENTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\includePage{Acknowledgements}{Acknowledgements}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% ABSTRACT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \includePage{Abstract}{Abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% LIST OF PAPERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\includePage{Paper_list}{List of papers}
+%\includePage{Paper_list}{List of papers}
 
 %%%%%%%%%%%%%%%%%%%%%%% TABLE OF CONTENTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -76,8 +91,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAPER IV %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\insertPaper{IV}{\PaperTitleFour}
-\includepdf[pages=-,scale=0.74,offset=0mm 10mm,pagecommand={\thispagestyle{plain}}]{papers/Paper4.pdf}
+%\insertPaper{IV}{\PaperTitleFour}
+%\includepdf[pages=-,scale=0.74,offset=0mm 10mm,pagecommand={\thispagestyle{plain}}]{papers/Paper4.pdf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
