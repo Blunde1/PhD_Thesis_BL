@@ -56,7 +56,7 @@ Is often the case that a reasonable parametric family of functions, $p(\mathbf{x
 However, $\theta_0$ will be unknown, and it is reasonable to estimate it using the observed data $\mathbf{x}$.
 To this end, maximum likelihood estimation is a popular approach.
 The maximum likelihood estimate (MLE) is the value of $\theta$ in $\Theta$ which maximizes the probability of the data, i.e. the likelihood, 
-\begin{align}
+\begin{align}\label{eq:mle}
 	\hat{\theta} = \arg\min_\theta \{-\log p(\mathbf{x};\theta)\}.
 \end{align}
 The maximum likelihood estimate, $\hat{\theta}$ is, under suitable regularity conditions, the asymptotically unbiased minimum variance estimate, and asymptotically normal.
@@ -71,11 +71,13 @@ In general, individual response observations, $y_i,~i=1\dots n$, could also be m
 Let $\hat{y}_i$ be a prediction for $y_i$ and let the loss function $l(y_i,\hat{y}_i)$ be a function measuring the difference between a response and its prediction.
 The supervised learning objective is to find the best possible predictive function, $f(x)=\hat{y}$, which takes a feature vector (row-vector of $\mathbf{x}$) as its argument, and outputs a prediction $\hat{y}$. "Best possible" is here in reference to the loss $l$ over observations not part of the training data $(\mathbf{x},y)$.
 More formally, we seek $f$ so that
-\begin{align}
+\begin{align}\label{eq:supervised objective}
 	\hat{f} = \arg\min_f \left\{ E\left[l(y^0, f(x^0))\right] \right\},
 \end{align} 
 where the superscript $(y^0, x^0)$ indicates an observation unseen in the training data, and $E$ denotes the expectation.
-Notice that, if the search is constrained over a parametric family of functions indexed by $\theta\in\Theta$, and the loss function is taken to be the negative log-likelihood, $l=-\log p$, then the supervised learning objective corresponds to maximum likelihood estimation in a regression setting.
+Notice that, if the search is constrained over a parametric family of functions indexed by $\theta\in\Theta$, and the loss function is taken to be the negative log-likelihood, $l=-\log p$, then the supervised learning objective is closely related to the objective of maximum likelihood estimation \eqref{eq:mle} in a regression setting.
+In fact, the objective in \eqref{eq:mle} is the sample estimator of the expected value in \eqref{eq:supervised objective}, but biased downwards in expectation, as evaluation is done over observations in the training set.
+% evaluated over observations not part of the training data.
 
 
 \chapter{Quadratic approximations in statistics} 
@@ -84,14 +86,14 @@ Notice that, if the search is constrained over a parametric family of functions 
 % must be appropriately differentiable
 
 %The title of this thesis is "Information in local curvature: Three papers on adaptive methods in computational statistics".
-The maximum likelihood objective 1 and supervised learning objective 2 are, except for the most trivial of cases, not straightforward, and must be solved numerically.
+The maximum likelihood objective \eqref{eq:mle} and supervised learning objective \eqref{eq:supervised objective} are, except for the most trivial of cases, not straightforward, and must be solved numerically.
 This then typically involve some iterative algorithm, which may require substantial manual tuning and trial and error before successful application. 
 %This is in relation to that 1 and 2 are not always straightforward.
 However, a local quadratic approximations to some otherwise intractable function can often be of help in making these algorithms more automatic and adaptive to the data and problem at hand.
 
-When referring to a local quadratic approximation, it meant to refer to a 2'nd order Taylor approximation, about some point $x_0$.
-For example, the quadratic approximation of the negative log-likelihood loss function about some value of $\theta$, say $\theta_k$, gives
-\begin{align}
+When referring to a local quadratic approximation, as is frequently done in this thesis, it is meant to refer to a 2'nd order Taylor approximation of a function $f(x)$, about some point $x_0$.
+For example, the quadratic approximation of the negative log-likelihood loss function $l=-\log p$ about some value of $\theta$, say $\theta_k$, gives
+\begin{align}\label{eq:quadratic approximation}
 	l(y_i,f(x_i;\theta))
 	&\approx
 	l(y_i,f(x_i;\theta_k))
@@ -100,30 +102,53 @@ For example, the quadratic approximation of the negative log-likelihood loss fun
 \end{align}
 
 \begin{Example}[Newton-Raphson]
-	The MLE $\hat{\theta}$ in 1 typically has to be found numerically, as 
-	the score equations, $0=\nabla_\theta l(y_i,f(x_i;\theta_k))$, is not possible to solve 
+	The MLE $\hat{\theta}$ in \eqref{eq:mle} typically has to be found numerically, as 
+	the score equations, $0=\nabla_\theta l(y_i,f(x_i;\theta_k))$, are not possible to solve 
 	analytically. Assuming that $l$ is differentiable and convex in $\theta$, the Newton-Raphson algorithm will converge to the MLE $\hat{\theta}$. 
-	It is constructed by employing the r.h.s. of 3.1. iteratively to the current value of $\theta$, say $\theta_k$, the next value in the iterative algorithm is constructed by 
+	The iterative Newton-Raphson algorithm is constructed by employing the r.h.s. of \eqref{eq:quadratic approximation} iteratively to the current value of $\theta$, say $\theta_k$, the next value in the iterative algorithm is then given by 
 	\begin{align*}
 		\theta_{k+1} = \theta_k 
 		- \left[\nabla_\theta^2 l(y_i,f(x_i;\theta_k))\right]^{-1}
 		\nabla_\theta l(y_i,f(x_i;\theta_k)),
 	\end{align*}
-	the MLE if $l$ indeed was equal to the quadratic approximation on the r.h.s. in 3.1.
+	the MLE if $l$ indeed was equal to the quadratic approximation on the r.h.s. in \eqref{eq:quadratic approximation}.
 \end{Example}
-while Fisher-scoring (or, in general, natural gradients) is perhaps preferable due to stability reasons than the NR algorithm, NR and FS is equivalent when the distribution is in the exponential family and canonical parametrization. Which is an important family of functions, implicitly considered in paper II and III.
+%while Fisher-scoring (or, in general, natural gradients) is perhaps preferable due to stability reasons than the NR algorithm, NR and FS is equivalent when the distribution is in the exponential family and canonical parametrization. Which is an important family of functions, implicitly considered in paper II and III.
 
-
-
-
-
-The following sections discuss applications of local quadratic approximations to attempted solutions to some of the problems following from numerical optimization of 1 and 2.
+There are many problems in computational statistics that may be helped by \eqref{eq:quadratic approximation}, however only a few, the ones relevant to papers I-III, are discussed here.
+The following sections discuss applications of local quadratic approximations as helpful tools in dealing with some of the problem associate/in dealing numerical optimization of \eqref{eq:mle} and \eqref{eq:supervised objective}.
 
 % NEWTON RAPHSON AS EXAMPLE
 
 %\section{Newton-Raphson}
 
 \section{The saddlepoint approximation}
+
+It is often the case that the density $p_X(x)$ of a random variable $X$, is not available in closed form when there are multiple sources of randomness present in $X$.
+Direct optimization of \eqref{eq:mle} is therefore difficult.
+However, the characteristic function or the Fourier transform of the density, $\varphi_X(s)=E[\exp(isX)]$ often still exhibits closed form, even in situations with more than one source of randomness.
+The density might then be retrieved by numerically evaluating the inverse Fourier transform
+\begin{align}\label{eq:ift}
+	p_X(x;\theta) = \frac{1}{2\pi} \int_{-\infty}^{\infty} \varphi_X(s;\theta)e^{-isx} ds
+	= \frac{1}{2\pi i} \int_{-i\infty}^{i\infty} e^{K_X(s;\theta)-sx} ds,
+\end{align}
+where $K_X(s;\theta)=\log\varphi_X(-is;\theta)$ is the cumulative generating function (CGF).
+% NUMERICAL PROBLEM
+
+%SPA
+First, notice that the value of the integral is unchanged if we integrate through a line parallel to the imaginary axis, say $\tau$,
+\begin{align}
+	p_X(x;\theta) 
+	= \frac{1}{2\pi i} \int_{-i\infty+\tau}^{i\infty+tau} e^{K_X(s;\theta)-sx} ds
+	= \frac{1}{2\pi} \int_{-i\infty}^{i\infty} e^{K_X(\tau+is;\theta)-(\tau+is)x} ds
+\end{align}
+Now, apply the quadratic approximation \eqref{eq:quadratic approximation} to the log-integrand, and choose the value of $\tau$ as the saddlepoint, $\hat{\tau}=\arg\min_\tau K_X(\tau;\theta)-\tau x$
+
+% TAIL BEHAVIOUR
+
+% accuracy and integration problem
+
+
 
 \section{Gradient tree boosting}
 
