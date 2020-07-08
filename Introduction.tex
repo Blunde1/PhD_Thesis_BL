@@ -220,13 +220,31 @@ The immediate solution, if having access to a dataset $\mathcal{D}_n=\{y_i,x_i\}
 % COMMENT ON OVERFITTING
 % COMMENT ON FUNCTION OPTIMIZATION, NEEDS TO BE CONSTRAINED
 % DEFINE DERIVATIVES
+To learn a function that is as close as possible (given the information in the sample) to the functional derivative, use the predictions resulting from the current model, $f^{k-1}$, to compute predictions $\hat{y}_i^{(k-1)}=f_0(x_i)+\dots+f^{(k-1)}(x_i)$, and then derivatives for observations in the sample as 
+\begin{align}
+g_{i,k} = \frac{\partial}{\partial \hat{y}}l(y,\hat{y}^{(k-1)})
+,~
+h_{i,k} = \frac{\partial^2}{\partial \hat{y}^2}l(y,\hat{y}^{(k-1)}).
+%,~
+%\hat{y}^{(k-1)} = f^{(k-1)}(x),
+\end{align}
+These are used in a 2'nd order approximation to the original loss
+\begin{align}
+	\hat{f}_k(x) &= \arg\min_{f_k}
+	\frac{1}{n}\sum_{i=1}^{n}l(y_i,\hat{y}_i^{(k-1)}) + g_{i,k}f_k(x_i) + \frac{1}{2}h_{i,k}f_k(x_i)^2
+	\notag \\
+	&= \arg\min_{f_k} \frac{1}{n}\sum_{i=1}^{n} g_{i,k}f_k(x_i) + \frac{1}{2}h_{i,k}f_k(x_i)^2
+\end{align}
+which is quadratic-type loss that typically is amenable for fast optimization.
+Now, a function that completely minimizes the above sample loss (both original and/or approximate), is likely to adapt to the inherent randomness in the sample.
+Furthermore, a search over all possible functions is obviously infeasible.
+Thus, the search is constrained to a family of functions, for example linear functions, local regression using kernels, or most popularly, trees.
+%CHECK IF TRAINING LOSS IS DEFINED
 
+%Necessarily, the expectation cannot be computed explicitly and neither can the functional derivative.
 
-Necessarily, the expectation cannot be computed explicitly and neither can the functional derivative.
-
-
-
-Gradient boosting emerges as the collection of the above-mentioned ideas: Compute derivative information or pseudo-residuals, and fit a statistical model to these observations. Next, shrink the model to make space for new models.
+Gradient boosting emerges as the collection of the above-mentioned ideas: Compute derivative information or pseudo-residuals, and fit a statistical model to these observations.
+The final ingredient of gradient boosting is to shrink the model by some constant $\delta\in(0,1)$ to make space for new models.
 
 
 The search among all possible functions have been constrained to some statistical model.
