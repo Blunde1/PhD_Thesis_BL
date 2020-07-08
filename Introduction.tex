@@ -205,13 +205,59 @@ These problems are the subject of Paper I.
 
 \section{Gradient tree boosting}
 \label{sec:gradient tree boosting}
+The idea behind gradient boosting emerges as a numerical approach to the optimization problem in \eqref{eq:supervised objective}, similarly to the Newton-Raphson algorithm from Example \ref{ex:newton-raphson} solving the optimization problem in \eqref{eq:mle}:
+Given an initial function $f^0(x)=f_0(x)$, one ideally seeks a function $f_1(x)$ minimizing
+\begin{align}
+	\hat{f}_1(x) = \arg\min_{f_1} E\left[ l\left(y,f^0(x)+f_1(x)\right) \right].
+\end{align}
+A reasonable substitute to $\hat{f}_1$ is to find the functional derivative of this objective and add the negative direction to the model, say $f^1 = f_0 + f_1$, and then repeat the procedure until convergence at iteration $K$, which would yield the final model $\hat{f}=f^0+\dots+f^K$.
 
+Difficulties arise to this procedure, as the joint distribution of $(y,x)$ is generally unknown.
+The immediate solution, if having access to a dataset $\mathcal{D}_n=\{y_i,x_i\}_{i=1}^n$ of independent observations, is to average the loss over these observations, and instead, at iteration $k$, seek
+\begin{align}
+	\hat{f}_k(x) = \arg\min_{f_k} \frac{1}{n}\sum_{i=1}^{n} l\left( y_i, f^{k-1}(x_i)+f_k(x_i) \right).
+\end{align}
+% COMMENT ON OVERFITTING
+% COMMENT ON FUNCTION OPTIMIZATION, NEEDS TO BE CONSTRAINED
+% DEFINE DERIVATIVES
+
+
+Necessarily, the expectation cannot be computed explicitly and neither can the functional derivative.
+
+
+
+Gradient boosting emerges as the collection of the above-mentioned ideas: Compute derivative information or pseudo-residuals, and fit a statistical model to these observations. Next, shrink the model to make space for new models.
+
+
+The search among all possible functions have been constrained to some statistical model.
+
+
+ might hope to find the functional derivative of the objective in \eqref{eq:supervised objective} with respect to $f$, say $-f^1$, and add the negative direction to the initial function, obtaining $f^0+f^1$,
+
+ and then repeat the procedure until convergence at iteration $K$ which yields the final model $\hat{f}^K=f_0+\dots+f_K$.
+However, as the joint distribution of $(y,x)$ is generally unknown, the expectation cannot be computed explicitly and neither can the functional derivative.
+Gradient boosting solves this by iteratively computing derivatives from the objective, and fitting a statistical model to this derivative information.
+
+Viewing gradient boosting as functional gradient descent is correct in the sense that each $f_k$ approximates some functional gradient.
+
+First, the expectation is approximated by averaging, and the objective is approximated by a Taylor expansion
+
+
+% WRITE OUT THE ALGORITHM
+
+
+
+
+
+This then minimizes an approximation to the original objective.
 
 
 \section{First order asymptotics}
+\label{sec:first order asymptotics}
 
 
 \section{Model selection}
+\label{sec:model selection}
 
 % INTRODUCE GEN LOSS --> TIC/NIC
 % mention BIC, also resulting from quadratic (laplace) approximation? related to spa
