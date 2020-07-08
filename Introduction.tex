@@ -13,7 +13,7 @@ The hope is then that the iterative methods that the local quadratic approximati
 
 The first part of this thesis will give a brief and informal introduction to the concepts and techniques that are used in papers I-III.
 The basis is the objective of maximum likelihood and supervised learning, which are presented in the first section.
-The second section introduces the local quadratic approximation, and showcase it in the relevant use-cases for papers I-III, i.e. maximum-likelihood numerical optimization, the saddlepoint approximation, gradient tree boosting, and asymptotic theory.
+The second section introduces the local quadratic approximation, and showcase it in the relevant use-cases for papers I-III, i.e. maximum-likelihood numerical optimization, the saddlepoint approximation, gradient tree boosting, asymptotic theory and model selection.
 The final section summarises the papers of the thesis.
 % are presented as the methods under investigation for this thesis, 
 %This includes 2'nd order quadratic approximations, and its use-cases in the saddlepoint approximation, gradient boosting and asymptotic theory.
@@ -101,11 +101,12 @@ For example, the quadratic approximation of the negative log-likelihood loss fun
 	&+ \frac{1}{2}(\theta-\theta_k)^T \nabla_\theta^2 l(y_i,f(x_i;\theta_k)) (\theta-\theta_k).
 \end{align}
 
-\begin{Example}[Newton-Raphson]
+\begin{Example}[Newton-Raphson]\label{ex:newton-raphson}
 	The MLE $\hat{\theta}$ in \eqref{eq:mle} typically has to be found numerically, as 
 	the score equations, $0=\nabla_\theta l(y_i,f(x_i;\theta_k))$, are not possible to solve 
 	analytically. Assuming that $l$ is differentiable and convex in $\theta$, the Newton-Raphson algorithm will converge to the MLE $\hat{\theta}$. 
 	The iterative Newton-Raphson algorithm is constructed by employing the r.h.s. of \eqref{eq:quadratic approximation} iteratively to the current value of $\theta$, say $\theta_k$, the next value in the iterative algorithm is then given by 
+	% VECTOR MATRIX NOTATION -- MUST BE EXPLAINED, PERHAPS BEFORE EQ 2.1?
 	\begin{align*}
 		\theta_{k+1} = \theta_k 
 		- \left[\nabla_\theta^2 l(y_i,f(x_i;\theta_k))\right]^{-1}
@@ -123,26 +124,78 @@ The following sections discuss applications of local quadratic approximations as
 %\section{Newton-Raphson}
 
 \section{The saddlepoint approximation}
-
-It is often the case that the density $p_X(x)$ of a random variable $X$, is not available in closed form when there are multiple sources of randomness present in $X$.
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=0.8\textwidth,height=6cm]{Fig/ift_direct_fail.pdf}
+	\caption{
+	\label{fig:ift-direct-fail}
+	Figure included from Paper 1. Illustrating the dominance of inaccuracies of the IFT \eqref{eq:ift}, calculated with quadrature, at machine precision at $\log(1.0\times 10^{-14})$ indicated by the dotted horizontal line.
+	}
+\end{figure}
+It is often the case that the density $p_X(x;\theta)$ of a random variable $X$, is not available in closed form when there are multiple sources of randomness present in $X$.
 Direct optimization of \eqref{eq:mle} is therefore difficult.
 However, the characteristic function or the Fourier transform of the density, $\varphi_X(s)=E[\exp(isX)]$ often still exhibits closed form, even in situations with more than one source of randomness.
 The density might then be retrieved by numerically evaluating the inverse Fourier transform
 \begin{align}\label{eq:ift}
 	p_X(x;\theta) = \frac{1}{2\pi} \int_{-\infty}^{\infty} \varphi_X(s;\theta)e^{-isx} ds
-	= \frac{1}{2\pi i} \int_{-i\infty}^{i\infty} e^{K_X(s;\theta)-sx} ds,
+	= \frac{1}{2\pi} \int_{\infty}^{\infty} e^{K_X(is;\theta)-isx} ds,
 \end{align}
 where $K_X(s;\theta)=\log\varphi_X(-is;\theta)$ is the cumulative generating function (CGF).
+
 % NUMERICAL PROBLEM
+However, consider the case of numerical MLE optimization, for example by using the Newton-Raphson algorithm in Example \ref{ex:newton-raphson}. 
+Here, at the first iteration, say $\theta_1$, the initial estimate is likely to start at values far from the population MLE, $\theta_0$.
+Necessarily, observations $x$ will take place in low-density regions of $p(x;\theta_1)$, and this will continue to be the case at subsequent iterations, until $\theta_k$ is close to $\theta_0$.
+% the log-densities building the likelihood are likely to very small probability mass.
+This constitutes a problem to direct numerical inversion of \eqref{eq:ift} using quadrature schemes (weighted sum of integrand evaluations), as numerical inaccuracies related to the (binary) representation of floating-point numbers will dominate.
+More specifically, considering double precision at order $1.0\times 10^{-16}$, if $x$ is in a region with log-density $\log p(x;\theta_k)$ smaller than this value, the inaccuracy of the representation is sure to dominate. Even more is that such behaviour/pathologies in practice happens a few orders of magnitude higher than the theoretical limit given above. In Figure \ref{fig:ift-direct-fail}, the error dominates already at $1.0\times 10^{-14}$.
+%FOR EXAMPLE
 
 %SPA
+An inversion technique that does not suffer from erroneous computations in low-density regions, and in fact is renown for its tail-accuracy, is the saddlepoint approximation (SPA) -cite daniels, Butler-.
+It is developed in paper 1 through an argument of exponential tilting, which takes place on the "time-domain" side of the Fourier transform. 
+Complimentary, an argument on the "frequency-domain" side is given here, that closely follows the derivation in -citet Butler, chapter-.
 First, notice that the value of the integral is unchanged if we integrate through a line parallel to the imaginary axis, say $\tau$,
 \begin{align}
 	p_X(x;\theta) 
-	= \frac{1}{2\pi i} \int_{-i\infty+\tau}^{i\infty+tau} e^{K_X(s;\theta)-sx} ds
-	= \frac{1}{2\pi} \int_{-i\infty}^{i\infty} e^{K_X(\tau+is;\theta)-(\tau+is)x} ds
+	%&= \frac{1}{2\pi i} \int_{\tau -i\infty}^{\tau + i\infty} e^{K_X(s;\theta)-sx} ds\notag\\
+	&= \frac{1}{2\pi} \int_{\infty}^{\infty} e^{K_X(\tau+is;\theta)-(\tau+is)x} ds
 \end{align}
-Now, apply the quadratic approximation \eqref{eq:quadratic approximation} to the log-integrand, and choose the value of $\tau$ as the saddlepoint, $\hat{\tau}=\arg\min_\tau K_X(\tau;\theta)-\tau x$
+Now, apply the quadratic approximation \eqref{eq:quadratic approximation} to the log-integrand,
+$K_X(\tau+is;\theta)-(\tau+is)x$,
+locally about the value of $\tau$ solving the saddlepoint equations
+\begin{align}\label{eq:spa-inner}
+	\hat{\tau}=\arg\min_\tau\{ K_X(\tau;\theta)-\tau x\},
+\end{align}
+henceforth called the saddlepoint.
+This then gives the approximation of the log-integrand
+\begin{align}
+	K_X(\hat{\tau}+is;\theta)-(\hat{\tau}+is)x
+	\approx 
+	K_X(\hat{\tau})-\hat{\tau}x
+	- \frac{1}{2}\frac{d^2}{d\tau^2}K_X(\hat{\tau})s^2.
+\end{align}
+Inserting this into the integral, and performing the transformation $u=\sqrt{\frac{d^2}{d\tau^2}K_X(\hat{\tau})}s$, then gives the SPA as
+\begin{align}\label{eq:spa}
+	p_X(x;\theta) 
+	&\approx
+	\frac{\exp(K_X(\hat{\tau})-\hat{\tau}x)}{2\pi\sqrt{\frac{d^2}{d\tau^2}K_X(\hat{\tau})}}
+	\int_{-\infty}^{\infty}e^{-\frac{1}{2}u^2}du \notag \\
+	&= \frac{\exp(K_X(\hat{\tau})-\hat{\tau}x)}{\sqrt{2\pi\frac{d^2}{d\tau^2}K_X(\hat{\tau})}}
+	= spa_X(x;\theta).
+\end{align}
+
+The SPA \eqref{eq:spa} is often accurate, and is asymptotically exact in $n$ if there is some asymptotic normality underlying $X$, for example for $X=n^{-1}\sum_i X_i$.
+In particular, its relatively fast computation if implemented using automatic-differentiation software to solve the inner problem \eqref{eq:spa-inner}, and its previously mentioned tail-accuracy, are properties that are highly tractable.
+On the down-side, the SPA does not integrate to one, except for in a few special cases.
+Also, the approximation is often unimodal even if the target density is multimodal, which could very well be the case when $X$ consists of multiple sources of randomness.
+A common technique is to multiply the SPA with a constant value $c$, where $c^{-1}=\int spa_X(x;\theta)dx$, that ensure it is a density.
+This is immediately more computationally costly, require bespoke implementation, and does not solve the problems of unimodality. 
+These problems are the subject of Paper I.
+
+% LEAD UP TO WHAT IS DONE IN PAPER 1 / MOTIVATE
+
+% and choose the value of $\tau$ as the saddlepoint, $\hat{\tau}=\arg\min_\tau K_X(\tau;\theta)-\tau x$
 
 % TAIL BEHAVIOUR
 
@@ -151,8 +204,17 @@ Now, apply the quadratic approximation \eqref{eq:quadratic approximation} to the
 
 
 \section{Gradient tree boosting}
+\label{sec:gradient tree boosting}
+
+
 
 \section{First order asymptotics}
+
+
+\section{Model selection}
+
+% INTRODUCE GEN LOSS --> TIC/NIC
+% mention BIC, also resulting from quadratic (laplace) approximation? related to spa
 
 
 
