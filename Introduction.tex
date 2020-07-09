@@ -205,14 +205,84 @@ These problems are the subject of Paper I.
 
 \section{Gradient tree boosting}
 \label{sec:gradient tree boosting}
-The idea behind gradient boosting emerges as a numerical approach to the optimization problem in \eqref{eq:supervised objective}, similarly to the Newton-Raphson algorithm from Example \ref{ex:newton-raphson} solving the optimization problem in \eqref{eq:mle}:
+\begin{algorithm*}[h!]
+	\begin{tabbing}
+		\hspace{2em} \= \hspace{2em} \= \hspace{2em} \= \\
+		{\bfseries Input}: \\
+		\> - A training set $\{(x_i, y_{i})\}_{i=1}^n$\\
+		\> - A differentiable loss function $l(\cdot,\cdot)$\\
+		\> - A learning rate $\delta\in(0,1]$\\
+		\> - Number of boosting iterations $K$\\
+		\> - Type of statistical model $\mathcal{F}$\\
+		
+		1. Initialize model with a constant value:\\
+		\>	$f^{(0)}(x) \equiv \underset{\eta}{\arg\min} \sum_{i=1}^n l(y_i, \eta)$\\
+		
+		2. {\bfseries for} $k = 1$ to $K$:\\
+		
+		\>	$i)$ Compute derivatives \eqref{eq:gb-derivatives}\\
+		
+		\> $ii)$ Fit a statistical model $\tilde{f}\in \mathcal{F}$ to derivatives using \eqref{eq:gb-iteration-loss} \\
+		
+		\> $iii)$ Scale the model with the learning rate\\
+		\>\> $f_k(x)= \delta \tilde{f}(x)$ \\%\sum_{t=1}^{T_k} \hat{w}_{tk}I(q_k(\features)=t)$\\
+		
+		\>	$iv)$ Update the model:\\
+		\>\>	$f^{(k)}(x) = f^{(k-1)}(x) + f_k(x)$\\
+		{\bfseries end for} \\
+		
+		3. Output the model: {\bfseries Return} $f^{(K)}(x)$%=\sum_{k=0}^{K}f_k(\features)$. \\
+		
+	\end{tabbing}
+	
+	\vspace{0.5cm}
+	If needed explaining text
+	\vspace{0.5cm}
+	
+	\caption{\label{alg:gradient-boosting} Second-order generic gradient boosting \cite{friedman2001elements} }
+\end{algorithm*}
+\begin{algorithm*}[h!]
+	\begin{tabbing}
+		\hspace{2em} \= \hspace{2em} \= \hspace{2em} \= \\
+		{\bfseries Input}: \\
+		\> - A training set with derivatives and features $\{(x_i, g_{i,k}, h_{i,k})\}_{i=1}^n$\\
+		
+		{\bfseries Do}: \\
+		1. Initialize the tree with a constant value $\hat{w}$ in a root node:\\
+		\>	$\hat{w} = - \frac{\sum_{i=1}^{n}g_{i,k}}{\sum_{i=1}^{n}h_{i,k}}$\\
+		
+		2. Choose a leaf node $t$ and let $I_{tk}$ be the index set of observations\\
+		\> falling into node $t$\\ 
+		\> For each feature $j$, compute the reduction in training loss\\
+		\> $ \mathcal{R}_t(j,s_j)=\frac{1}{2n}\left[ \frac{\left(\sum_{i\in I_{L}(j,s:j)}g_{ik}\right)^2}{\sum_{i\in I_{L}(j,s_j)}h_{ik}}
+		+ \frac{\left(\sum_{i\in I_{R}(j,s_j)}g_{ik}\right)^2}{\sum_{i\in I_{R}(j,s_j)}h_{ik}}	
+		-\frac{\left(\sum_{i\in I_{tk}}g_{ik}\right)^2}{\sum_{i\in I_{tk}}h_{ik}} \right] $\\
+		\> 		for different split-points $s_j$, and where\\ 
+		\> $I_{L}(j,s_j) = \{ i\in I_{tk}: x_{ij}\leq s_j \}$ and
+		 $I_{R}(j, s_j) = \{ i\in I_{tk} : x_{ij} > s_j \}$\\
+		\> The values of $j$ and $s_j$ maximizing $\mathcal R_t(j,s_j)$ are chosen as\\
+		\> the next split, creating two new leaves from the old leaf $t$.\\
+		
+		3. Continue step 2 iteratively, until some threshold on\\
+		\> tree-complexity is reached.
+		
+	\end{tabbing}
+	
+	\vspace{0.5cm}
+	If needed explaining text
+	\vspace{0.5cm}
+	
+	\caption{\label{alg:recursive-binary-splitting} Greedy recursive binary splitting, from Paper II }
+\end{algorithm*}
+
+The idea behind gradient boosting emerged in \citet{friedman2001greedy} and in particular in \citet{mason1999boosting} as a way to approximate functional gradient descent for the optimization problem in \eqref{eq:supervised objective}, similarly to how the Newton-Raphson algorithm from Example \ref{ex:newton-raphson} solves the optimization problem in \eqref{eq:mle}:
 Given an initial function $f^0(x)=f_0(x)$, one ideally seeks a function $f_1(x)$ minimizing
 \begin{align}
 	\hat{f}_1(x) = \arg\min_{f_1} E\left[ l\left(y,f^0(x)+f_1(x)\right) \right].
 \end{align}
-A reasonable substitute to $\hat{f}_1$ is to find the functional derivative of this objective and add the negative direction to the model, say $f^1 = f_0 + f_1$, and then repeat the procedure until convergence at iteration $K$, which would yield the final model $\hat{f}=f^0+\dots+f^K$.
+If this is difficult, a reasonable substitute to $\hat{f}_1$ is to find the functional derivative of this objective and add the negative direction to the model, say $f^1 = f_0 + f_1$, and then repeat the procedure until convergence at iteration $K$, which would yield the final model $\hat{f}=f^0+\dots+f^K$.
 
-Difficulties arise to this procedure, as the joint distribution of $(y,x)$ is generally unknown.
+Difficulties arise to this procedure, as the joint distribution of $(y,x)$ is generally unknown. Therefore, the expectation cannot be computed explicitly and neither can the functional derivative.
 The immediate solution, if having access to a dataset $\mathcal{D}_n=\{y_i,x_i\}_{i=1}^n$ of independent observations, is to average the loss over these observations, and instead, at iteration $k$, seek
 \begin{align}
 	\hat{f}_k(x) = \arg\min_{f_k} \frac{1}{n}\sum_{i=1}^{n} l\left( y_i, f^{k-1}(x_i)+f_k(x_i) \right).
@@ -221,53 +291,83 @@ The immediate solution, if having access to a dataset $\mathcal{D}_n=\{y_i,x_i\}
 % COMMENT ON FUNCTION OPTIMIZATION, NEEDS TO BE CONSTRAINED
 % DEFINE DERIVATIVES
 To learn a function that is as close as possible (given the information in the sample) to the functional derivative, use the predictions resulting from the current model, $f^{k-1}$, to compute predictions $\hat{y}_i^{(k-1)}=f_0(x_i)+\dots+f^{(k-1)}(x_i)$, and then derivatives for observations in the sample as 
-\begin{align}
-g_{i,k} = \frac{\partial}{\partial \hat{y}}l(y,\hat{y}^{(k-1)})
+\begin{align}\label{eq:gb-derivatives}
+g_{i,k} = \frac{\partial}{\partial \hat{y_i}}l(y_i,\hat{y}_i^{(k-1)})
 ,~
-h_{i,k} = \frac{\partial^2}{\partial \hat{y}^2}l(y,\hat{y}^{(k-1)}).
+h_{i,k} = \frac{\partial^2}{\partial \hat{y_i}^2}l(y_i,\hat{y}_i^{(k-1)}).
 %,~
 %\hat{y}^{(k-1)} = f^{(k-1)}(x),
 \end{align}
 These are used in a 2'nd order approximation to the original loss
-\begin{align}
+\begin{align}\label{eq:gb-iteration-loss}
 	\hat{f}_k(x) &= \arg\min_{f_k}
 	\frac{1}{n}\sum_{i=1}^{n}l(y_i,\hat{y}_i^{(k-1)}) + g_{i,k}f_k(x_i) + \frac{1}{2}h_{i,k}f_k(x_i)^2
 	\notag \\
 	&= \arg\min_{f_k} \frac{1}{n}\sum_{i=1}^{n} g_{i,k}f_k(x_i) + \frac{1}{2}h_{i,k}f_k(x_i)^2
 \end{align}
-which is quadratic-type loss that typically is amenable for fast optimization.
-Now, a function that completely minimizes the above sample loss (both original and/or approximate), is likely to adapt to the inherent randomness in the sample.
+which is quadratic-type loss amenable to fast optimization.
+Now, a function that completely minimizes the above sample loss (both the original and/or the approximate), is likely to adapt to the inherent randomness in the sample.
 Furthermore, a search over all possible functions is obviously infeasible.
-Thus, the search is constrained to a family of functions, for example linear functions, local regression using kernels, or most popularly, trees.
+For these reasons, the search is constrained to a family of functions that admits fast fitting routines/optimization, and that are somehow constrained and thus less likely to overfit.
+Typical families include linear functions, local regression using kernels, or most popularly, trees.
 %CHECK IF TRAINING LOSS IS DEFINED
 
 %Necessarily, the expectation cannot be computed explicitly and neither can the functional derivative.
 
-Gradient boosting emerges as the collection of the above-mentioned ideas: Compute derivative information or pseudo-residuals, and fit a statistical model to these observations.
-The final ingredient of gradient boosting is to shrink the model by some constant $\delta\in(0,1)$ to make space for new models.
+Gradient boosting emerges as the collection of the above-mentioned ideas: Iteratively, compute derivative information or pseudo-residuals through \eqref{eq:gb-derivatives}, and fit a statistical model $\tilde{f}_k$ to these observations using \eqref{eq:gb-iteration-loss}.
+The final ingredient of gradient boosting is to shrink the model by some constant $\delta\in(0,1]$, $\hat{f}_k=\delta \tilde{f}_k$ to make space for new models, and add it to the ensemble model $f^{(k)}=f^{(k-1)}+\hat{f}_k$.
+The gradient boosting pseudo-algorithm is given in Algorithm \ref{alg:gradient-boosting}.
+Note that this is the modern-type gradient boosting algorithm, slightly different from the original algorithm of \citet{friedman2001greedy} which is a first-order type algorithm, that would fit the model using mean-squared-error loss, then scale the model with an optimized constant value and finally shrink it.
 
 
-The search among all possible functions have been constrained to some statistical model.
+% LINEAR FUNCTIONS (SEQUENTIALY) --> SPARSE MODELS, LASSO RELATION
+
+% WE WANT TO KEEP SPARSITY, BUT GAIN NON-LINEARITY AND INTERACTION EFFECTS --> TREES
+The choice of statistical model to fit to the pseudo-residuals is not arbitrary.
+The popular choice is to use classification and regression trees (CART) \citep{breiman1984classification}, which gives gradient tree boosting, the boosting type that has dominated in many machine-learning competitions since the introduction of xgboost \citep{chen2016xgboost}.
+Using CART as week learners can be motivated by first considering linear functions, $\hat{y}=\beta^Tx$, where only a portion of the full estimate of the $\hat{\beta}_j$ decreasing \eqref{eq:gb-iteration-loss} the most is used. This then resembles a type of shrinked foreward stagewise procedure, which is closely related to computing LASSO solution paths \citep{friedman2001elements}.
+Boosting thus holds the possibility of efficiently building sparse models in the face of high-dimensional problems, by excluding features $x_j$ that does not contribute significant decreases in \eqref{eq:gb-iteration-loss}.
+If a week learner is used that fits and use all features simultaneously, this pathology of boosting is likely to disappear.
+
+If CART is fit using greedy binary splitting (Algorithm \ref{alg:recursive-binary-splitting}), then features are used sequentially in the learning procedure.
+%CART uses features sequentially if trained with greedy binary splitting (Algorithm XX), which is the popular choice.
+Furthermore, in contrast to linear functions, CART can learn non-linear functions and interaction effects automatically.
+In essence, gradient tree boosting may learn sparse, non-linear models with complex interaction effects efficiently, while the shrinkage $\delta$ applied to each tree will smooth out the piecewise constant functions.
+Model complexity may range from the constant model, to high-dimensional non-linear functions, and in between is often something that may decrease the objective in \eqref{eq:supervised objective} more than other types of (fixed complexity) models.
+
+% TUNING
+Gradient boosting originally has two hyperparameters, namely the number of boosting iterations $K$, and shrinkage or the learning rate $\delta$, which is usually set to some "small" value.
+Using CART as week learners introduces additional tuning to control the complexity of individual trees.
+\citet{friedman2000additive} suggests global hyperparameters fixed equally for all trees, as the greedy binary splitting algorithm is optimized as if the current boosting iteration is the last iteration.
+Important such hyperparameters are a parameter for the maximum depth of trees, a maximum number of leaves or terminal nodes in a tree, and a threshold for minimum reduction in training loss \eqref{eq:gb-iteration-loss} if a split is to be performed.
+Hyperparamters are typically learned using $k$-fold cross-validation (CV) \citep{stone1974cross}, which increase computation times significantly.
 
 
- might hope to find the functional derivative of the objective in \eqref{eq:supervised objective} with respect to $f$, say $-f^1$, and add the negative direction to the initial function, obtaining $f^0+f^1$,
 
- and then repeat the procedure until convergence at iteration $K$ which yields the final model $\hat{f}^K=f_0+\dots+f_K$.
-However, as the joint distribution of $(y,x)$ is generally unknown, the expectation cannot be computed explicitly and neither can the functional derivative.
-Gradient boosting solves this by iteratively computing derivatives from the objective, and fitting a statistical model to this derivative information.
-
-Viewing gradient boosting as functional gradient descent is correct in the sense that each $f_k$ approximates some functional gradient.
-
-First, the expectation is approximated by averaging, and the objective is approximated by a Taylor expansion
+% IN THE END: COMMENT ON L1-L2, AND SAMPLING
 
 
-% WRITE OUT THE ALGORITHM
-
-
-
-
-
-This then minimizes an approximation to the original objective.
+%The search among all possible functions have been constrained to some statistical model.
+%
+%
+% might hope to find the functional derivative of the objective in \eqref{eq:supervised objective} with respect to $f$, say $-f^1$, and add the negative direction to the initial function, obtaining $f^0+f^1$,
+%
+% and then repeat the procedure until convergence at iteration $K$ which yields the final model $\hat{f}^K=f_0+\dots+f_K$.
+%However, as the joint distribution of $(y,x)$ is generally unknown, the expectation cannot be computed explicitly and neither can the functional derivative.
+%Gradient boosting solves this by iteratively computing derivatives from the objective, and fitting a statistical model to this derivative information.
+%
+%Viewing gradient boosting as functional gradient descent is correct in the sense that each $f_k$ approximates some functional gradient.
+%
+%First, the expectation is approximated by averaging, and the objective is approximated by a Taylor expansion
+%
+%
+%% WRITE OUT THE ALGORITHM
+%
+%
+%
+%
+%
+%This then minimizes an approximation to the original objective.
 
 
 \section{First order asymptotics}
