@@ -411,7 +411,7 @@ The goal was a computationally efficient version of the Efron Information Criter
 
 Often the most computationally efficient procedures are analytical results, which may be obtained for estimated quantities through asymptotics.
 The central limit theorem may be applied to the score equations, $0=\nabla_\theta l(y,f(\mathbf{x};\hat{\theta}))=n^{-1}\sum_{i=1}^{n}l(y_i,f(x_i;\hat{\theta}))$, to obtain asymptotic normality, and from this, asymptotic normality of estimated parameters (under certain regularity conditions, see \citet{vanDerVaart}) can be obtained through the delta method as 
-\begin{align}
+\begin{align}\label{eq:parameters-asymptotic-normality}
 	n^{-1}(\hat{\theta}-\theta_0) &\sim N\left( 0, J(\theta_0)^{-1}I(\theta_0) \right),\\ 
 	J(\theta) &= E[\nabla_\theta^2 l(y,x;\theta))],\notag\\
 	I(\theta) &= E\left[ \nabla_\theta l(y,f(x);\theta))\nabla_\theta l(y,f(x);\theta))^T \right].\notag
@@ -429,17 +429,82 @@ Much more can be said about different asymptotic results in statistics, conditio
 % mention BIC, also resulting from quadratic (laplace) approximation? related to spa
 % Efficiency of estimated estimators: GIC table
 
+Denote the true distribution of $X$ as $G_X(x)$ with density $g_X(x)$, which is attempted modelled by density $p_X(x)$, then the Kullback-Leibler divergence (KLD) -cite KL 1951-, denoted $D$ is given by 
+\begin{align}\label{eq:kullback-leibler}
+	D(g,p)
+	%:= \int g_X(x)\log \frac{g_X(x)}{p_X(x;\hat{\theta})} dx
+	:= \int g_X(x)\log g_X(x) dx - \int g_X(x)\log p_X(x;\hat{\theta}) dx.
+\end{align}
+Since the first integral in \eqref{eq:kullback-leibler} is constant w.r.t. different choices of models $p_X(x;\theta)$, only the negative remaining integral is relevant, and is commonly referred to as relative KLD.
+The negative log-likelihood objective of the optimization problem in \eqref{eq:mle} is a sample version of relative KLD, and appears as the natural objective for optimization over different values of $\theta$, when minimizing KLD is the the overarching goal.
+
+Selection between models is more difficult when candidate models are of different functional form and complexity.
+This becomes clear if we rewrite the fitted sample negative log-likelihood as the expectation integral with respect to the empirical distribution,
+\begin{align}\label{eq:loss-wrt-empirical-distribution}
+	-\log p_X(\mathbf{x};\hat\theta) = -\int \log p_X(x;\hat{\theta}) dG_X^*(x).
+\end{align}
+The empirical distribution $G_X^*$ corresponds more closely towards fitted models $p_X(x;\hat\theta)$ with higher complexity, than does true $G_X$.
+Therefore, naively using the negative log-likelihood as the basis for model selection will result in unfairly consistent choices of models with high complexity over parsimonious models.
+This is termed the "optimism" of the training loss \citep{friedman2001elements}.
+This is taken into consideration in the supervised-learning optimization objective \eqref{eq:supervised objective}.
+If the loss function $l$ appearing in \eqref{eq:supervised objective} is a negative log-likelihood $-\log p$, then the objective of \eqref{eq:supervised objective} is exactly the negative last integral of the KLD \eqref{eq:kullback-leibler}, as evaluation is over data $(y^0,x^0)$ unseen in the fitting of $\hat\theta$.
+
+% information criteria optimizing for KLD: adjust negative log-likelihood of loss function for the bias
+
+In the coming discussion, consider the loss-based regression setting $l(y,f(x;\theta))$.
+The idea of generalization-based information criteria is to adjust for the bias induced by integrating the model w.r.t. the empirical distribution instead of the true distribution $G_X$ in \eqref{eq:loss-wrt-empirical-distribution}.
+Denote this bias or the optimism by $C(\hat{\theta})$, making the dependence upon fitted parameters $\hat\theta$ explicit.
+Then $C(\hat\theta)$ is given by
+\begin{align}\label{eq:information criterion bias}
+	C(\hat\theta) = E\left[ l(y^0,f(x^0;\hat{\theta}))\right] - E\left[ l(y,f(x;\hat{\theta}))\right],
+\end{align}
+where in the first expectation, $(y^0,x^0)$ is independent of data using in fitting of $\hat\theta$, while in the second expectation $(y,x)$ is part of the training set.
+Information criteria like the celebrated Akaike Information Criterion (commonly known as AIC) \citep{akaike1974new}, Takeuchi Information Criterion (TIC) \citep{takeuchi1976distribution} and Network Information Criterion (NIC) \citep{murata1994network} targets this bias $C(\hat\theta)$.
+A detailed development of AIC and TIC is found in \citet{burnham2003model}, and the case for NIC is almost completely analogous.
+
+Common for all three information criteria mentioned above, is that they rely on the asymptotic approximation
+\begin{align}\label{eq:ic-fundamental-equation}
+	C(\hat\theta) \approx \texttt{tr}\left( E\left[ \nabla_\theta^2l(y,f(x;\theta_0))\right]Cov(\hat\theta)\right),
+\end{align}
+which is developed from two quadratic approximations \ref{eq:quadratic approximation} of the loss $l$ about $\theta_0$ and $\hat\theta$.
+The approximation is applicable when the loss is appropriately differentiable in $\theta$, and $\hat\theta$ is a consistent estimator.
+In the case of AIC, the true model $g$ is assumed as an interior point in the space of $\theta$.
+Under this assumption, the covariance in \eqref{eq:ic-fundamental-equation} is the inverse of the expected hessian. Thus the right hand side of \eqref{eq:ic-fundamental-equation} reduces to the number of dimensions of $\theta$, say $d$.
+If $g$ is not assumed to be an interior point, the Sandwich-estimator due to Huber \citep{huber1967behavior} can be used for the covariance.
+The trace in \eqref{eq:ic-fundamental-equation} then gives $C(\hat\theta)\approx\texttt{tr}(J(\theta_0)^{-1}I(\theta_0))$, and estimation of these as discussed in \ref{sec:distribution of estimated parameters} results in TIC and NIC.
+Notice that \eqref{eq:ic-fundamental-equation} is not directly applicable to the tree-models at different stages of Algorithm \ref{alg:recursive-binary-splitting}.
+This is because $l$ is generally not differentiable in the different split points being profiled over to maximize reduction in loss.
+
+Finally, note the existence of many other information criteria, that may seek to improve on the above mentioned criteria, or that targets other objectives than KLD and expected generalization loss. Notorious is the Corrected Akaike Information Criterion (AICc), the Bayesian information criterion (BIC), which may also be developed using a quadratic approximation together with a close-cousin of the SPA called the Laplace approximation, and the Focused Information Criterion (FIC).
+See -citet Hjort model selection and model averaging- for an overview.
 
 
 \chapter{Summary of the papers}
 % PAPER I
 
-The first paper of the thesis, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce iaculis nulla in est pellentesque ultrices. Nulla ex eros, iaculis vel malesuada vitae, iaculis eu mauris. Nullam sed bibendum erat. Cras tristique augue quis risus egestas porta. Aenean gravida quam congue, malesuada massa nec, vestibulum neque. Suspendisse potenti. Pellentesque non enim efficitur, lobortis ex ac, pulvinar sem. Cras sed velit tincidunt, pharetra elit a, pretium nunc. Donec imperdiet sem a nunc porttitor, non elementum ipsum blandit. Vivamus imperdiet ipsum quis justo gravida blandit. Vivamus sed mauris sed urna maximus pretium. Donec luctus placerat turpis. Praesent dui augue, viverra ultrices lacinia ac, efficitur quis nisi. Nullam pulvinar orci eu lacus mollis, molestie placerat tortor posuere.
+The first paper of the thesis, "Saddlepoint adjusted inversion of characteristic functions", written in collaboration with the professors Tore Selland Kleppe and Hans Julius SKaug, the SPA is developed through exponential tilting in the time-domain side of the Fourier transform. 
+This development admits a deconstruction of the density of some random variable $X$ as the SPA and the density of a standardized random variable $Z$ evaluated at zero. The variable $Z$ is specified through its CGF $K_Z(s)$, a function of the CGF of $X$.
+The representation of $p_X$ is exact, and necessarily takes care of issues regarding renormalization and unimodality of the SPA.
+Furthermore, as evaluation of the density of $Z$ is only necessary at the, by-design, high-density point zero, inversion using quadrature is accurate and does not suffer from the numerical issues of direct IFT using quadrature, even at low-density regions of $X$ where the SPA will dominate.
+The methodology is illustrated using the Negative Inverse Gaussian distribution, and applied to financial data through the Merton Jump Diffusion model.
 
 
 % PAPER II
-In the second paper, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce iaculis nulla in est pellentesque ultrices. Nulla ex eros, iaculis vel malesuada vitae, iaculis eu mauris. Nullam sed bibendum erat. Cras tristique augue quis risus egestas porta. Aenean gravida quam congue, malesuada massa nec, vestibulum neque. Suspendisse potenti. Pellentesque non enim efficitur, lobortis ex ac, pulvinar sem. Cras sed velit tincidunt, pharetra elit a, pretium nunc. Donec imperdiet sem a nunc porttitor, non elementum ipsum blandit. Vivamus imperdiet ipsum quis justo gravida blandit. Vivamus sed mauris sed urna maximus pretium. Donec luctus placerat turpis. Praesent dui augue, viverra ultrices lacinia ac, efficitur quis nisi. Nullam pulvinar orci eu lacus mollis, molestie placerat tortor posuere.
+In the second paper, "An information criterion for automatic gradient tree boosting", written in collaboration with the professors Tore Selland Kleppe and Hans Julius SKaug, an information criterion is constructed that takes into consideration the optimism induced into the training loss by the greedy recursive binary splitting in Algorithm \ref{alg:recursive-binary-splitting}.
+% for automatic gradient tree boosting is constructed.
+The bias \eqref{eq:information criterion bias} is found by relating the asymptotic dynamics of the loss under split-profiling, to that of a Cox-Ingersoll-Ross process (CIR).
+The asymptotic normality \eqref{eq:parameters-asymptotic-normality} of estimators is key to establish a familiar continuous-time stochastic process, and eventually the CIR, that makes it possible to build upon the approximate equation \eqref{eq:ic-fundamental-equation} for generalization-loss based information criteria.
+Finally, to take into consideration the optimism induced by selecting the maximum reduction in loss over features $j$ in Algorithm \ref{alg:recursive-binary-splitting}, extreme-value theory is employed.
+The criterion is built into an algorithm for gradient tree boosting which is automatic, removing hyperparameters such as the number of boosting iterations $K$ and constraints regularizing trees.
+The underlying assumptions are tested on simulated data, and the algorithm is validated on a collection of real data by measuring both speed and accuracy versus comparative methodologies.
 
 
 % PAPER III
-The third paper, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce iaculis nulla in est pellentesque ultrices. Nulla ex eros, iaculis vel malesuada vitae, iaculis eu mauris. Nullam sed bibendum erat. Cras tristique augue quis risus egestas porta. Aenean gravida quam congue, malesuada massa nec, vestibulum neque. Suspendisse potenti. Pellentesque non enim efficitur, lobortis ex ac, pulvinar sem. Cras sed velit tincidunt, pharetra elit a, pretium nunc. Donec imperdiet sem a nunc porttitor, non elementum ipsum blandit. Vivamus imperdiet ipsum quis justo gravida blandit. Vivamus sed mauris sed urna maximus pretium. Donec luctus placerat turpis. Praesent dui augue, viverra ultrices lacinia ac, efficitur quis nisi. Nullam pulvinar orci eu lacus mollis, molestie placerat tortor posuere.
+The third paper, "aGTBoost: Adaptive and Automatic Gradient Tree Boosting Computations", written in collaboration with professor Tore Selland Kleppe, focuses
+on the implementation of the theory in Paper II in an R-package named aGTBoost. 
+In addition, the paper propose a modification of the splitting procedure in Algorithm \ref{alg:recursive-binary-splitting}, to be more adept to gradient boosting by taking into consideration the possible root-split produced in the coming boosting iteration.
+Usage of aGTBoost is illustrated, and its functionality on the large Higgs dataset is compared versus the xgboost R-package.
+Results suggests superior performance of aGTBoost versus the default settings of xgboost.
+Furthermore, the aGTBoost package lowers the threshold for users to employ gradient tree boosting, as detailed knowledge on hyperparameter tuning and setting up $k-$fold CV in code no longer is a necessity.
+
+
