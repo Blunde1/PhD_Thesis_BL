@@ -370,8 +370,56 @@ Hyperparamters are typically learned using $k$-fold cross-validation (CV) \citep
 %This then minimizes an approximation to the original objective.
 
 
-\section{First order asymptotics}
-\label{sec:first order asymptotics}
+\section{Distribution of estimated parameters}
+\label{sec:distribution of estimated parameters}
+%A main task of statisticians, is to evaluate the significance of statistical models, their parameters and selection among hypothesis.
+%A necessary ingredient for this task to be done successfully, is to know, or to estimate, the distribution of estimated parameters.
+%To this end, techniques like the bootstrap -cite efron- that sample from the empirical distribution could be applied. While robust and without many underlying assumptions, the sampling is computationally expensive, and the empirical distribution is not always readily available (for example in cases with dependent observations).
+%An alternative is to 
+%% bootstrap is certainly one approach, $F_X$ with $\hat F_X$ sample from
+%% toolbox of asymptotic theory
+%% score equations
+%% score equations in gradient tree boosting
+%% 
+
+%\begin{enumerate}
+%	\item Key to problems in mle 1.1, and as boosting procedure is multiple 1.1: use distribution of estimated parameters to evaluate the significance of the model, or to control complexity (more on this in the preceding section).
+%	\item This can be done in a multiple of ways, whereas bootstrapping -cite efron- and using asymptotics are the most popular choices.
+%	\item Present bootstrapping
+%	\item At early stages of this thesis, experimented with spa on empirical cgf, to avoid expensive sampling
+%	\item Asymptotic normality: Analytic result possible to build upon
+%	\item Due to its (Gaussian) analytic results, numerical stability and fast evaluation, asymptotic normality emerged as the preferred solution to estimate the distribution of estimated parameters.
+%\end{enumerate}
+
+A key to solving problems of the type in \eqref{eq:mle}, which there are multiple of in the boosting solution to \eqref{eq:supervised objective}, is to use the distribution of estimated parameters to evaluate the significance of the model.
+This can for-example be used to control complexity of the model, or to reject alternative hypothesis.
+
+There are multiple ways of approximating the distribution of estimated quantities.
+The perhaps most straight-forward method, if observations are independent, is the bootstrap \citep{efron1992bootstrap}.
+The idea is that if the distribution, $P_X(x)$, behind the true data-generating process is known, then a large number, say $B$, of size-$n$ datasets, i.i.d. of the training data $\{y_i,x_i\}_{i=1}^n$, could be sampled.
+Then, the fitting procedure could be performed for each sampled-dataset, and finally statistical methods could be used to investigate the sampled quantities.
+However, the true distribution $P_X$ is of course generally unknown.
+The idea of the bootstrap is to exchange $P_X$ with the empirical distribution, $P_X^*(x)=n^{-1}\sum_{i=1}^{n}1(x_i\leq x)$, and then perform the above mentioned procedure.
+
+Sampling procedures are in general, however, quite expensive, and this is no different for the bootstrap.
+%The sampling procedure is, however, quite expensive.
+At early experimental stages of this work, the SPA was used together with the idea of the empirical distribution $P_X^*$ to retrieve necessary density approximations while avoiding costly sampling.
+The idea is to use the empirical CGF, $K_X^*(s)=\log\left(\sum_{i=1}^{n} e^{sx_i}\right)-\log n$, in the SPA \eqref{eq:spa}, from which desired results can be drawn. 
+This is explained in \citet[Chapter 14]{butler2007saddlepoint}, and in particular Chapter 12.2 for the ratio estimators appearing in Algorithm \ref{alg:recursive-binary-splitting}.
+The goal was a computationally efficient version of the Efron Information Criterion (EIC) \citep{ishiguro1997bootstrapping}, but was abandoned due to concerns regarding stability and speed of computations, in comparison to analytical asymptotic results.
+% COMMENT ON GIC AND EFFICIENCY RESULT FOR SMALL SAMPLES IN IC SECTION
+
+Often the most computationally efficient procedures are analytical results, which may be obtained for estimated quantities through asymptotics.
+The central limit theorem may be applied to the score equations, $0=\nabla_\theta l(y,f(\mathbf{x};\hat{\theta}))=n^{-1}\sum_{i=1}^{n}l(y_i,f(x_i;\hat{\theta}))$, to obtain asymptotic normality, and from this, asymptotic normality of estimated parameters (under certain regularity conditions, see \citet{vanDerVaart}) can be obtained through the delta method as 
+\begin{align}
+	n^{-1}(\hat{\theta}-\theta_0) &\sim N\left( 0, J(\theta_0)^{-1}I(\theta_0) \right),\\ 
+	J(\theta) &= E[\nabla_\theta^2 l(y,x;\theta))],\notag\\
+	I(\theta) &= E\left[ \nabla_\theta l(y,f(x);\theta))\nabla_\theta l(y,f(x);\theta))^T \right].\notag
+\end{align}
+Estimates of $J$ and $I$ can be obtained through averaging and by using $\hat\theta$ in place of $\theta_0$, computation is usually highly efficient, and stability is a non-issue.
+Furthermore, Gaussian results are highly tractable, as a Gaussian empirical process often converge asymptotically to known and well-studied continuous-time stochastic processes.
+As such, using asymptotic normality emerged as the preferred solution in Paper II and III.
+Much more can be said about different asymptotic results in statistics, conditions under which normality emerge, and its applications. For an overview see \citet{vanDerVaart}.
 
 
 \section{Model selection}
@@ -379,6 +427,7 @@ Hyperparamters are typically learned using $k$-fold cross-validation (CV) \citep
 
 % INTRODUCE GEN LOSS --> TIC/NIC
 % mention BIC, also resulting from quadratic (laplace) approximation? related to spa
+% Efficiency of estimated estimators: GIC table
 
 
 
