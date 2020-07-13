@@ -441,7 +441,7 @@ The negative log-likelihood objective of the optimization problem in \eqref{eq:m
 Selection between models is more difficult when candidate models are of different functional form and complexity.
 This becomes clear if we rewrite the fitted sample negative log-likelihood as the expectation integral with respect to the empirical distribution,
 \begin{align}\label{eq:loss-wrt-empirical-distribution}
-	-\log p_X(\mathbf{x};\hat\theta) = -\int \log p_X(x;\hat{\theta}) dG_X^*(x).
+	-n^{-1}\log p_X(\mathbf{x};\hat\theta) = -\int \log p_X(x;\hat{\theta}) dG_X^*(x).
 \end{align}
 The empirical distribution $G_X^*$ corresponds more closely towards fitted models $p_X(x;\hat\theta)$ with higher complexity, than does true $G_X$.
 Therefore, naively using the negative log-likelihood as the basis for model selection will result in unfairly consistent choices of models with high complexity over parsimonious models.
@@ -482,7 +482,7 @@ See -citet Hjort model selection and model averaging- for an overview.
 \chapter{Summary of the papers}
 % PAPER I
 
-The first paper of the thesis, "Saddlepoint adjusted inversion of characteristic functions", written in collaboration with the professors Tore Selland Kleppe and Hans Julius SKaug, the SPA is developed through exponential tilting in the time-domain side of the Fourier transform. 
+The first paper of the thesis, "Saddlepoint adjusted inversion of characteristic functions", written in collaboration with the professors Tore Selland Kleppe and Hans Julius Skaug, the SPA is developed through exponential tilting in the time-domain side of the Fourier transform. 
 This development admits a deconstruction of the density of some random variable $X$ as the SPA and the density of a standardized random variable $Z$ evaluated at zero. The variable $Z$ is specified through its CGF $K_Z(s)$, a function of the CGF of $X$.
 The representation of $p_X$ is exact, and necessarily takes care of issues regarding renormalization and unimodality of the SPA.
 Furthermore, as evaluation of the density of $Z$ is only necessary at the, by-design, high-density point zero, inversion using quadrature is accurate and does not suffer from the numerical issues of direct IFT using quadrature, even at low-density regions of $X$ where the SPA will dominate.
@@ -490,7 +490,7 @@ The methodology is illustrated using the Negative Inverse Gaussian distribution,
 
 
 % PAPER II
-In the second paper, "An information criterion for automatic gradient tree boosting", written in collaboration with the professors Tore Selland Kleppe and Hans Julius SKaug, an information criterion is constructed that takes into consideration the optimism induced into the training loss by the greedy recursive binary splitting in Algorithm \ref{alg:recursive-binary-splitting}.
+In the second paper, "An information criterion for automatic gradient tree boosting", written in collaboration with the professors Tore Selland Kleppe and Hans Julius Skaug, an information criterion is constructed that takes into consideration the optimism induced into the training loss by the greedy recursive binary splitting in Algorithm \ref{alg:recursive-binary-splitting}.
 % for automatic gradient tree boosting is constructed.
 The bias \eqref{eq:information criterion bias} is found by relating the asymptotic dynamics of the loss under split-profiling, to that of a Cox-Ingersoll-Ross process (CIR).
 The asymptotic normality \eqref{eq:parameters-asymptotic-normality} of estimators is key to establish a familiar continuous-time stochastic process, and eventually the CIR, that makes it possible to build upon the approximate equation \eqref{eq:ic-fundamental-equation} for generalization-loss based information criteria.
