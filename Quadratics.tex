@@ -1,0 +1,400 @@
+\chapter{Quadratic approximations in statistics} 
+
+% mention many more related applications: Newton-Raphson, RMHMC, Laplace approx... highly active fields of research
+% must be appropriately differentiable
+
+%The title of this thesis is "Information in local curvature: Three papers on adaptive methods in computational statistics".
+The maximum likelihood objective \eqref{eq:mle} and supervised learning objective \eqref{eq:supervised objective} are, except for the most trivial of cases, not straightforward, and must be solved numerically.
+This then typically involve some iterative algorithm, which may require substantial manual tuning and trial and error before successful application. 
+%This is in relation to that 1 and 2 are not always straightforward.
+However, a local quadratic approximations to some otherwise intractable function can often be of help in making these algorithms more automatic and adaptive to the relevant data.
+
+When referring to a local quadratic approximation, as is frequently done in this thesis, it is meant to refer to a 2'nd order Taylor approximation of a function $f(x)$, about some point $x_0$.
+For example, the quadratic approximation of the negative log-likelihood loss function $l=-\log p$ about some value of $\theta$, say $\theta_k$, gives
+\begin{align}\label{eq:quadratic approximation}
+	l(y_i,f(x_i;\theta))
+	&\approx
+	l(y_i,f(x_i;\theta_k))
+	+ \nabla_\theta l(y_i,f(x_i;\theta_k)) (\theta-\theta_k)\notag\\
+	&+ \frac{1}{2}(\theta-\theta_k)^T \nabla_\theta^2 l(y_i,f(x_i;\theta_k)) (\theta-\theta_k).
+\end{align}
+
+\begin{Example}[Newton-Raphson]\label{ex:newton-raphson}
+	The MLE $\hat{\theta}$ in \eqref{eq:mle} typically has to be found numerically, as 
+	the score equations, $0=\nabla_\theta l(y_i,f(x_i;\theta_k))$, are not possible to solve 
+	analytically. Assuming that $l$ is differentiable and convex in $\theta$, the Newton-Raphson algorithm will converge to the MLE $\hat{\theta}$. 
+	The iterative Newton-Raphson algorithm is constructed by employing the r.h.s. of \eqref{eq:quadratic approximation} iteratively to the current value of $\theta$, say $\theta_k$, the next value in the iterative algorithm is then given by 
+	% VECTOR MATRIX NOTATION -- MUST BE EXPLAINED, PERHAPS BEFORE EQ 2.1?
+	\begin{align*}
+		\theta_{k+1} = \theta_k 
+		- \left[\nabla_\theta^2 l(y_i,f(x_i;\theta_k))\right]^{-1}
+		\nabla_\theta l(y_i,f(x_i;\theta_k)),
+	\end{align*}
+	the MLE if $l$ indeed was equal to the quadratic approximation on the r.h.s. in \eqref{eq:quadratic approximation}.
+\end{Example}
+%while Fisher-scoring (or, in general, natural gradients) is perhaps preferable due to stability reasons than the NR algorithm, NR and FS is equivalent when the distribution is in the exponential family and canonical parametrization. Which is an important family of functions, implicitly considered in paper II and III.
+
+There are an abundance of problems in computational statistics that may be helped by \eqref{eq:quadratic approximation}. However, only a few, the ones relevant to papers \Romannum{1}-\Romannum{3}, are discussed here.
+The following sections discuss applications of local quadratic approximations as helpful tools in dealing with some of the numerical problems associate optimization of \eqref{eq:mle} and \eqref{eq:supervised objective}.
+
+% NEWTON RAPHSON AS EXAMPLE
+
+%\section{Newton-Raphson}
+
+\section{The saddlepoint approximation}
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=0.8\textwidth,height=6cm]{Fig/ift_direct_fail.pdf}
+	\caption{
+	\label{fig:ift-direct-fail}
+	Figure included from Paper 1. Illustrating the dominance of inaccuracies of the IFT \eqref{eq:ift}, calculated with quadrature, at machine precision at $\log(1.0\times 10^{-14})$ indicated by the dotted horizontal line.
+	}
+\end{figure}
+It is often the case that the density $p_X(x;\theta)$ of a random variable $X$, is not available in closed form when there are multiple sources of randomness present in $X$.
+Direct optimization of \eqref{eq:mle} is therefore difficult.
+However, the characteristic function or the Fourier transform of the density, $\varphi_X(s)=E[\exp(isX)]$ often still exhibits closed form, even in situations with more than one source of randomness.
+The density might then be retrieved by numerically evaluating the inverse Fourier transform
+\begin{align}\label{eq:ift}
+	p_X(x;\theta) = \frac{1}{2\pi} \int_{-\infty}^{\infty} \varphi_X(s;\theta)e^{-isx} ds
+	= \frac{1}{2\pi} \int_{-\infty}^{\infty} e^{K_X(is;\theta)-isx} ds,
+\end{align}
+where $K_X(s;\theta)=\log\varphi_X(-is;\theta)$ is the cumulative generating function (CGF) and the last equality holds due to symmetry.
+
+% NUMERICAL PROBLEM
+However, consider the case of numerical MLE optimization, for example by using the Newton-Raphson algorithm in Example \ref{ex:newton-raphson}. 
+Here, at the first iteration, say $\theta_1$, the initial estimate is likely to start at values far from the population MLE, $\theta_0$.
+Necessarily, observations $x$ will take place in low-density regions of $p(x;\theta_1)$, and this will continue to be the case at subsequent iterations, until $\theta_k$ is close to $\theta_0$.
+% the log-densities building the likelihood are likely to very small probability mass.
+This constitutes a problem to direct numerical inversion of \eqref{eq:ift} using quadrature schemes (weighted sum of integrand evaluations), as numerical inaccuracies related to the (binary) representation of floating-point numbers will dominate.
+More specifically, considering double precision at order $1.0\times 10^{-16}$, if $x$ is in a region with log-density $\log p(x;\theta_k)$ smaller than this value, the inaccuracy of the binary representation is sure to dominate. Even more is that such unwanted behaviour in practice happens a few orders of magnitude higher than the theoretical limit given above. In Figure \ref{fig:ift-direct-fail}, the error dominates already at $1.0\times 10^{-14}$.
+%FOR EXAMPLE
+
+%SPA
+An inversion technique that does not suffer from erroneous computations in low-density regions, and in fact is renown for its tail-accuracy (under regularity conditions, see \citet{barndorff1999tail}), is the saddlepoint approximation (SPA) \citep{daniels1954saddlepoint}.
+It is developed in paper \Romannum{1} through an argument of exponential tilting, which takes place on the "time-domain" side of the Fourier transform. 
+Complimentary, an argument on the "frequency-domain" side is given here, that closely follows the derivation in \citet{butler2007saddlepoint}.
+First, notice that the value of the integral in \eqref{eq:ift} is unchanged if we integrate through a line parallel to the imaginary axis, say $\tau$,
+\begin{align}
+	p_X(x;\theta) 
+	%&= \frac{1}{2\pi i} \int_{\tau -i\infty}^{\tau + i\infty} e^{K_X(s;\theta)-sx} ds\notag\\
+	&= \frac{1}{2\pi} \int_{\infty}^{\infty} e^{K_X(\tau+is;\theta)-(\tau+is)x} ds.
+\end{align}
+Now, apply the quadratic approximation \eqref{eq:quadratic approximation} to the log-integrand,
+$K_X(\tau+is;\theta)-(\tau+is)x$,
+locally about the value of $\tau$ solving the saddlepoint equations
+\begin{align}\label{eq:spa-inner}
+	\hat{\tau}=\arg\min_\tau\{ K_X(\tau;\theta)-\tau x\},
+\end{align}
+henceforth called the saddlepoint.
+This then gives the approximation of the log-integrand
+\begin{align}
+	K_X(\hat{\tau}+is;\theta)-(\hat{\tau}+is)x
+	\approx 
+	K_X(\hat{\tau})-\hat{\tau}x
+	- \frac{1}{2}\frac{d^2}{d\tau^2}K_X(\hat{\tau})s^2.
+\end{align}
+Inserting this into the integral, and performing the transformation $u=\sqrt{\frac{d^2}{d\tau^2}K_X(\hat{\tau})}s$ gives the ordinary SPA as
+\begin{align}\label{eq:spa}
+	p_X(x;\theta) 
+	&\approx
+	\frac{\exp(K_X(\hat{\tau})-\hat{\tau}x)}{2\pi\sqrt{\frac{d^2}{d\tau^2}K_X(\hat{\tau})}}
+	\int_{-\infty}^{\infty}e^{-\frac{1}{2}u^2}du \notag \\
+	&= \frac{\exp(K_X(\hat{\tau})-\hat{\tau}x)}{\sqrt{2\pi\frac{d^2}{d\tau^2}K_X(\hat{\tau})}}
+	= spa_X(x;\theta).
+\end{align}
+
+The SPA \eqref{eq:spa} is often accurate, and is asymptotically exact in $n$ if there is some asymptotic normality underlying $X$, for example for $X=n^{-1}\sum_i X_i$.
+In particular, its relatively fast computation if implemented using automatic-differentiation software to solve the inner problem \eqref{eq:spa-inner}, and its previously mentioned tail-accuracy, are properties that are highly tractable.
+On the down-side, the SPA does not integrate to one, except for in a few special cases.
+% MENTION SPA GOES TOWARDS GAUSSIAN SOLUTIONS WHEN INFERENCE
+Also, the approximation is often unimodal even if the target density is multimodal, which could very well be the case when $X$ consists of multiple sources of randomness.
+A common technique is to multiply the SPA with a constant value $c$, where $c^{-1}=\int spa_X(x;\theta)dx$, that ensure $cspa_X(x;\theta)$ to be a density.
+This is immediately more computationally costly, require bespoke implementation, and does not solve the problems of unimodality. 
+These problems are the subject of Paper \Romannum{1}.
+% LEAD UP TO WHAT IS DONE IN PAPER 1 / MOTIVATE
+
+% and choose the value of $\tau$ as the saddlepoint, $\hat{\tau}=\arg\min_\tau K_X(\tau;\theta)-\tau x$
+
+% TAIL BEHAVIOUR
+
+% accuracy and integration problem
+
+
+
+\section{Gradient tree boosting}
+\label{sec:gradient tree boosting}
+\begin{algorithm*}[h!]
+	\begin{tabbing}
+		\hspace{2em} \= \hspace{2em} \= \hspace{2em} \= \\
+		{\bfseries Input}: \\
+		\> - A training set $\{(x_i, y_{i})\}_{i=1}^n$\\
+		\> - A differentiable loss function $l(\cdot,\cdot)$\\
+		\> - A learning rate $\delta\in(0,1]$\\
+		\> - Number of boosting iterations $K$\\
+		\> - Type of statistical model $\mathcal{F}$\\
+		
+		1. Initialize model with a constant value:\\
+		\>	$f^{(0)}(x) \equiv \underset{\eta}{\arg\min} \sum_{i=1}^n l(y_i, \eta)$\\
+		
+		2. {\bfseries for} $k = 1$ to $K$:\\
+		
+		\>	$i)$ Compute derivatives \eqref{eq:gb-derivatives}\\
+		
+		\> $ii)$ Fit a statistical model $\tilde{f}\in \mathcal{F}$ to derivatives using \eqref{eq:gb-iteration-loss} \\
+		
+		\> $iii)$ Scale the model with the learning rate\\
+		\>\> $f_k(x)= \delta \tilde{f}(x)$ \\%\sum_{t=1}^{T_k} \hat{w}_{tk}I(q_k(\features)=t)$\\
+		
+		\>	$iv)$ Update the model:\\
+		\>\>	$f^{(k)}(x) = f^{(k-1)}(x) + f_k(x)$\\
+		{\bfseries end for} \\
+		
+		3. Output the model: {\bfseries Return} $f^{(K)}(x)$%=\sum_{k=0}^{K}f_k(\features)$. \\
+		
+	\end{tabbing}
+	
+	\vspace{0.5cm}
+	If needed explaining text
+	\vspace{0.5cm}
+	
+	\caption{\label{alg:gradient-boosting} Second-order generic gradient boosting \cite{friedman2001elements} }
+\end{algorithm*}
+\begin{algorithm*}[h!]
+	\begin{tabbing}
+		\hspace{2em} \= \hspace{2em} \= \hspace{2em} \= \\
+		{\bfseries Input}: \\
+		\> - A training set with derivatives and features $\{(x_i, g_{i,k}, h_{i,k})\}_{i=1}^n$\\
+		
+		{\bfseries Do}: \\
+		1. Initialize the tree with a constant value $\hat{w}$ in a root node:\\
+		\>	$\hat{w} = - \frac{\sum_{i=1}^{n}g_{i,k}}{\sum_{i=1}^{n}h_{i,k}}$\\
+		
+		2. Choose a leaf node $t$ and let $I_{tk}$ be the index set of observations\\
+		\> falling into node $t$\\ 
+		\> For each feature $j$, compute the reduction in training loss\\
+		\> $ \mathcal{R}_t(j,s_j)=\frac{1}{2n}\left[ \frac{\left(\sum_{i\in I_{L}(j,s:j)}g_{ik}\right)^2}{\sum_{i\in I_{L}(j,s_j)}h_{ik}}
+		+ \frac{\left(\sum_{i\in I_{R}(j,s_j)}g_{ik}\right)^2}{\sum_{i\in I_{R}(j,s_j)}h_{ik}}	
+		-\frac{\left(\sum_{i\in I_{tk}}g_{ik}\right)^2}{\sum_{i\in I_{tk}}h_{ik}} \right] $\\
+		\> 		for different split-points $s_j$, and where\\ 
+		\> $I_{L}(j,s_j) = \{ i\in I_{tk}: x_{ij}\leq s_j \}$ and
+		 $I_{R}(j, s_j) = \{ i\in I_{tk} : x_{ij} > s_j \}$\\
+		\> The values of $j$ and $s_j$ maximizing $\mathcal R_t(j,s_j)$ are chosen as\\
+		\> the next split, creating two new leaves from the old leaf $t$.\\
+		
+		3. Continue step 2 iteratively, until some threshold on\\
+		\> tree-complexity is reached.
+		
+	\end{tabbing}
+	
+	\vspace{0.5cm}
+	If needed explaining text
+	\vspace{0.5cm}
+	
+	\caption{\label{alg:recursive-binary-splitting} Greedy recursive binary splitting, from Paper \Romannum{2} }
+\end{algorithm*}
+
+The idea behind gradient boosting emerged in \citet{friedman2001greedy} and in particular in \citet{mason1999boosting} as a way to approximate functional gradient descent for the optimization problem in \eqref{eq:supervised objective}, similarly to how the Newton-Raphson algorithm from Example \ref{ex:newton-raphson} solves the optimization problem in \eqref{eq:mle}:
+Given an initial function $f^0(x)=f_0(x)$, one ideally seeks a function $f_1(x)$ minimizing
+\begin{align}
+	\hat{f}_1(x) = \arg\min_{f_1} E\left[ l\left(y,f^0(x)+f_1(x)\right) \right].
+\end{align}
+If this is difficult, a reasonable substitute to $\hat{f}_1$ is to find the functional derivative of this objective and add the negative direction to the model, say $f^1 = f_0 + f_1$, and then repeat the procedure until termination at iteration $K$, which would yield the final model $\hat{f}=f^0+\dots+f^K$.
+
+Difficulties arise to this procedure, as the joint distribution of $(y,x)$ is generally unknown. Therefore, the expectation cannot be computed explicitly and neither can the functional derivative.
+The immediate solution, if having access to a dataset $\mathcal{D}_n=\{y_i,x_i\}_{i=1}^n$ of independent observations, is to average the loss over these observations, and instead, at iteration $k$, seek
+\begin{align}
+	\hat{f}_k(x) = \arg\min_{f_k} \frac{1}{n}\sum_{i=1}^{n} l\left( y_i, f^{k-1}(x_i)+f_k(x_i) \right).
+\end{align}
+% COMMENT ON OVERFITTING
+% COMMENT ON FUNCTION OPTIMIZATION, NEEDS TO BE CONSTRAINED
+% DEFINE DERIVATIVES
+To learn a function that is as close as possible (given the information in the sample) to the functional derivative, use the predictions resulting from the current model, $f^{k-1}$, to compute predictions $\hat{y}_i^{(k-1)}=f_0(x_i)+\dots+f^{(k-1)}(x_i)$, and then derivatives for observations in the sample as 
+\begin{align}\label{eq:gb-derivatives}
+g_{i,k} = \frac{\partial}{\partial \hat{y_i}}l(y_i,\hat{y}_i^{(k-1)})
+,~
+h_{i,k} = \frac{\partial^2}{\partial \hat{y_i}^2}l(y_i,\hat{y}_i^{(k-1)}).
+%,~
+%\hat{y}^{(k-1)} = f^{(k-1)}(x),
+\end{align}
+These are used in a 2'nd order approximation to the original loss
+\begin{align}\label{eq:gb-iteration-loss}
+	\hat{f}_k(x) &= \arg\min_{f_k}
+	\frac{1}{n}\sum_{i=1}^{n}l(y_i,\hat{y}_i^{(k-1)}) + g_{i,k}f_k(x_i) + \frac{1}{2}h_{i,k}f_k(x_i)^2
+	\notag \\
+	&= \arg\min_{f_k} \frac{1}{n}\sum_{i=1}^{n} g_{i,k}f_k(x_i) + \frac{1}{2}h_{i,k}f_k(x_i)^2
+\end{align}
+which is quadratic-type loss amenable to fast optimization.
+Now, a function that completely minimizes the above sample loss (both the original and/or the approximate), is likely to adapt to the inherent randomness in the sample.
+Furthermore, a search over all possible functions is obviously infeasible.
+For these reasons, the search is constrained to a family of functions that admits fast fitting routines, and that are somehow constrained and thus less likely to overfit.
+Typical families include linear functions, local regression using kernels, or most popularly, trees.
+%CHECK IF TRAINING LOSS IS DEFINED
+
+%Necessarily, the expectation cannot be computed explicitly and neither can the functional derivative.
+
+Gradient boosting emerges as the collection of the above-mentioned ideas: Iteratively, compute derivative information or pseudo-residuals through \eqref{eq:gb-derivatives}, and fit a statistical model $\tilde{f}_k$ to these observations using \eqref{eq:gb-iteration-loss}.
+The final ingredient of gradient boosting is to shrink the model by some constant $\delta\in(0,1]$, $\hat{f}_k=\delta \tilde{f}_k$ to make space for new models, and add it to the ensemble model $f^{(k)}=f^{(k-1)}+\hat{f}_k$.
+The gradient boosting pseudo-algorithm is given in Algorithm \ref{alg:gradient-boosting}.
+Note that this is the modern-type gradient boosting algorithm, slightly different from the original algorithm of \citet{friedman2001greedy} which is a first-order type algorithm, that would fit the model using mean-squared-error loss, then scale the model with an optimized constant value and finally shrink it.
+
+
+% LINEAR FUNCTIONS (SEQUENTIALY) --> SPARSE MODELS, LASSO RELATION
+
+% WE WANT TO KEEP SPARSITY, BUT GAIN NON-LINEARITY AND INTERACTION EFFECTS --> TREES
+The choice of statistical model to fit to the pseudo-residuals is not arbitrary.
+The popular choice is to use classification and regression trees (CART) \citep{breiman1984classification}, which gives gradient tree boosting, the boosting type that has dominated in many machine-learning competitions since the introduction of xgboost \citep{chen2016xgboost}.
+Using CART as weak learners can be motivated by first considering linear functions, $\hat{y}=\beta^Tx$, where only a portion of the full estimate of the $\hat{\beta}_j$ decreasing \eqref{eq:gb-iteration-loss} the most is used. This then resembles a type of shrinked foreward stagewise procedure, which is closely related to computing LASSO solution paths \citep{friedman2001elements}.
+Boosting thus holds the possibility of efficiently building sparse models in the face of high-dimensional problems, by excluding features $x_j$ that does not contribute significant decreases in \eqref{eq:gb-iteration-loss}.
+If a weak learner is used that fits and use all features simultaneously, this pathology of boosting is likely to disappear.
+
+If CART is fit using greedy binary splitting (Algorithm \ref{alg:recursive-binary-splitting}), then features are used sequentially in the learning procedure.
+%CART uses features sequentially if trained with greedy binary splitting (Algorithm XX), which is the popular choice.
+Furthermore, in contrast to linear functions, CART can learn non-linear functions and interaction effects automatically.
+In essence, gradient tree boosting may learn sparse, non-linear models with complex interaction effects efficiently, while the shrinkage $\delta$ applied to each tree will smooth out the piecewise constant functions.
+Model complexity may range from the constant model, to high-dimensional non-linear functions, and in between these two extremes often lie a model that may decrease the objective in \eqref{eq:supervised objective} more so than other types of models.
+
+% TUNING
+Gradient boosting originally has two hyperparameters, namely the number of boosting iterations $K$, and shrinkage or the learning rate $\delta$, which is usually set to some "small" value.
+Using CART as weak learners introduces additional tuning to control the complexity of individual trees.
+\citet{friedman2000additive} suggests global hyperparameters fixed equally for all trees, as the greedy recursive binary splitting algorithm is optimized as if the current boosting iteration is the last iteration.
+Important such hyperparameters are parameters for the maximum depth of trees, a maximum number of leaves or terminal nodes in a tree, and a threshold for minimum reduction in training loss \eqref{eq:gb-iteration-loss} if a split is to be performed.
+Hyperparamters are typically learned using $k$-fold cross-validation (CV) \citep{stone1974cross}, which increase computation times significantly.
+
+
+
+% IN THE END: COMMENT ON L1-L2, AND SAMPLING
+
+
+%The search among all possible functions have been constrained to some statistical model.
+%
+%
+% might hope to find the functional derivative of the objective in \eqref{eq:supervised objective} with respect to $f$, say $-f^1$, and add the negative direction to the initial function, obtaining $f^0+f^1$,
+%
+% and then repeat the procedure until convergence at iteration $K$ which yields the final model $\hat{f}^K=f_0+\dots+f_K$.
+%However, as the joint distribution of $(y,x)$ is generally unknown, the expectation cannot be computed explicitly and neither can the functional derivative.
+%Gradient boosting solves this by iteratively computing derivatives from the objective, and fitting a statistical model to this derivative information.
+%
+%Viewing gradient boosting as functional gradient descent is correct in the sense that each $f_k$ approximates some functional gradient.
+%
+%First, the expectation is approximated by averaging, and the objective is approximated by a Taylor expansion
+%
+%
+%% WRITE OUT THE ALGORITHM
+%
+%
+%
+%
+%
+%This then minimizes an approximation to the original objective.
+
+
+\section{Distribution of estimated parameters}
+\label{sec:distribution of estimated parameters}
+%A main task of statisticians, is to evaluate the significance of statistical models, their parameters and selection among hypothesis.
+%A necessary ingredient for this task to be done successfully, is to know, or to estimate, the distribution of estimated parameters.
+%To this end, techniques like the bootstrap -cite efron- that sample from the empirical distribution could be applied. While robust and without many underlying assumptions, the sampling is computationally expensive, and the empirical distribution is not always readily available (for example in cases with dependent observations).
+%An alternative is to 
+%% bootstrap is certainly one approach, $F_X$ with $\hat F_X$ sample from
+%% toolbox of asymptotic theory
+%% score equations
+%% score equations in gradient tree boosting
+%% 
+
+%\begin{enumerate}
+%	\item Key to problems in mle 1.1, and as boosting procedure is multiple 1.1: use distribution of estimated parameters to evaluate the significance of the model, or to control complexity (more on this in the preceding section).
+%	\item This can be done in a multiple of ways, whereas bootstrapping -cite efron- and using asymptotics are the most popular choices.
+%	\item Present bootstrapping
+%	\item At early stages of this thesis, experimented with spa on empirical cgf, to avoid expensive sampling
+%	\item Asymptotic normality: Analytic result possible to build upon
+%	\item Due to its (Gaussian) analytic results, numerical stability and fast evaluation, asymptotic normality emerged as the preferred solution to estimate the distribution of estimated parameters.
+%\end{enumerate}
+
+A key to solving problems of the type in \eqref{eq:mle}, which there are multiple of in the boosting solution to \eqref{eq:supervised objective}, is to use the distribution of estimated parameters to evaluate the significance of the model.
+This can for example be used to control complexity of the model, or to reject alternative hypothesis.
+
+There are multiple ways of approximating the distribution of estimated quantities.
+The perhaps most straight-forward method, if observations are independent, is the bootstrap \citep{efron1992bootstrap}.
+The idea is that if the distribution, $P_X(x)$, behind the true data-generating process is known, then a large number, say $B$, of size-$n$ datasets, i.i.d. of the training data $\{y_i,x_i\}_{i=1}^n$, could be sampled.
+Then, the fitting procedure could be performed for each sampled-dataset, and finally statistical methods could be used to investigate the sampled quantities.
+However, the true distribution $P_X$ is of course generally unknown.
+The idea of the bootstrap is to exchange $P_X$ with the empirical distribution, $P_X^*(x)=n^{-1}\sum_{i=1}^{n}1(x_i\leq x)$, and then perform the above mentioned procedure.
+
+Sampling procedures are in general, however, quite expensive, and this is no different for the bootstrap.
+%The sampling procedure is, however, quite expensive.
+At early experimental stages of this work, the SPA was used together with the idea of the empirical distribution $P_X^*$ to retrieve necessary density approximations while avoiding costly sampling.
+The idea is to use the empirical CGF, $K_X^*(s)=\log\left(\sum_{i=1}^{n} e^{sx_i}\right)-\log n$, in the SPA \eqref{eq:spa}, from which desired results can be drawn. 
+This is explained in \citet[Chapter 14]{butler2007saddlepoint}, and in particular Chapter 12.2 for the ratio estimators appearing in Algorithm \ref{alg:recursive-binary-splitting}.
+The goal was a computationally efficient version of the Efron Information Criterion (EIC) \citep{ishiguro1997bootstrapping}, but was abandoned due to concerns regarding stability and speed of computations, in comparison to analytical asymptotic results.
+% COMMENT ON GIC AND EFFICIENCY RESULT FOR SMALL SAMPLES IN IC SECTION
+
+Often the most computationally efficient procedures are analytical results, which may be obtained for estimated quantities through asymptotics.
+The central limit theorem may be applied to the score equations, $0=\nabla_\theta l(y,f(\mathbf{x};\hat{\theta}))=n^{-1}\sum_{i=1}^{n}l(y_i,f(x_i;\hat{\theta}))$, to obtain asymptotic normality, and from this, asymptotic normality of estimated parameters (under certain regularity conditions, see \citet{vanDerVaart}) can be obtained through the delta method as 
+\begin{align}\label{eq:parameters-asymptotic-normality}
+	\sqrt{n}^{-1}(\hat{\theta}-\theta_0) &\sim N\left( 0, J(\theta_0)^{-1}I(\theta_0)\left[J(\theta_0)^{-1}\right]^\intercal \right),\\
+	%\text{where} \\
+	J(\theta) &= E[\nabla_\theta^2 l(y,x;\theta))],\notag\\
+	%\text{and}\\
+	I(\theta) &= E\left[ \nabla_\theta l(y,f(x);\theta))\nabla_\theta l(y,f(x);\theta))^\intercal \right].\notag
+\end{align}
+Estimates of $J$ and $I$ can be obtained through averaging and by using $\hat\theta$ in place of $\theta_0$, computation is usually highly efficient, and stability is a non-issue.
+Furthermore, Gaussian results are highly tractable, as a Gaussian empirical process often converge asymptotically to known and well-studied continuous-time stochastic processes.
+As such, using asymptotic normality emerged as the preferred solution in Paper \Romannum{2} and \Romannum{3}.
+Much more can be said about different asymptotic results in statistics, conditions under which normality emerge, and its applications. For an overview see \citet{vanDerVaart}.
+
+
+\section{Model selection}
+\label{sec:model selection}
+
+% INTRODUCE GEN LOSS --> TIC/NIC
+% mention BIC, also resulting from quadratic (laplace) approximation? related to spa
+% Efficiency of estimated estimators: GIC table
+
+Denote the true distribution of some random variable $X$ as $G_X(x)$ with density $g_X(x)$, which is attempted modelled by density $p_X(x)$, then the Kullback-Leibler divergence (KLD) -cite KL 1951-, denoted $D$ is given by 
+\begin{align}\label{eq:kullback-leibler}
+	D(g,p)
+	%:= \int g_X(x)\log \frac{g_X(x)}{p_X(x;\hat{\theta})} dx
+	:= \int g_X(x)\log g_X(x) dx - \int g_X(x)\log p_X(x;\hat{\theta}) dx.
+\end{align}
+Since the first integral in \eqref{eq:kullback-leibler} is constant w.r.t. different choices of models $p_X(x;\theta)$, only the negative remaining integral is relevant, and is commonly referred to as relative KLD.
+The negative log-likelihood objective of the optimization problem in \eqref{eq:mle} is a sample version of relative KLD, and appears as the natural objective for optimization over different values of $\theta$, when the overarching goal is the minimization of KLD.
+
+Selection between models is more difficult when candidate models are of different functional form and complexity.
+This becomes clear if we rewrite the fitted sample negative log-likelihood as the expectation integral with respect to the empirical distribution $G_X^*$,
+\begin{align}\label{eq:loss-wrt-empirical-distribution}
+	-n^{-1}\log p_X(\mathbf{x};\hat\theta) = -\int \log p_X(x;\hat{\theta}) dG_X^*(x).
+\end{align}
+The empirical distribution $G_X^*$ corresponds more closely towards fitted models $p_X(x;\hat\theta)$ with higher complexity, than does true $G_X$.
+Therefore, naively using the negative log-likelihood as the basis for model selection will result in unfairly consistent choices of models with high complexity over parsimonious models.
+This is termed the "optimism" of the training loss \citep{friedman2001elements}.
+This is taken into consideration in the supervised-learning optimization objective \eqref{eq:supervised objective}.
+If the loss function $l$ appearing in \eqref{eq:supervised objective} is a negative log-likelihood $-\log p$, then the objective of \eqref{eq:supervised objective} is exactly the negative last integral of the KLD \eqref{eq:kullback-leibler}, as evaluation is over data $(y^0,x^0)$ unseen in the fitting of $\hat\theta$.
+
+% information criteria optimizing for KLD: adjust negative log-likelihood of loss function for the bias
+
+In the coming discussion, consider the loss-based regression setting $l(y,f(x;\theta))$.
+The idea of generalization-based information criteria is to adjust for the bias induced by integrating the model w.r.t. the empirical distribution instead of the true distribution $G_X$ in \eqref{eq:loss-wrt-empirical-distribution}.
+Denote this bias or the optimism by $C(\hat{\theta})$, making the dependence upon fitted parameters $\hat\theta$ explicit.
+Then $C(\hat\theta)$ is given by
+\begin{align}\label{eq:information criterion bias}
+	C(\hat\theta) = E\left[ l(y^0,f(x^0;\hat{\theta}))\right] - E\left[ l(y,f(x;\hat{\theta}))\right],
+\end{align}
+where in the first expectation, $(y^0,x^0)$ is independent of data using in fitting of $\hat\theta$, while in the second expectation $(y,x)$ is part of the training set.
+Information criteria like the celebrated Akaike Information Criterion (commonly known as AIC) \citep{akaike1974new}, Takeuchi Information Criterion (TIC) \citep{takeuchi1976distribution} and Network Information Criterion (NIC) \citep{murata1994network} targets this bias $C(\hat\theta)$.
+A detailed development of AIC and TIC is found in \citet{burnham2003model}, and the case for NIC is almost completely analogous.
+
+Common for all three information criteria mentioned above, is that they rely on the asymptotic approximation
+\begin{align}\label{eq:ic-fundamental-equation}
+	C(\hat\theta) \approx \texttt{tr}\left( E\left[ \nabla_\theta^2l(y,f(x;\theta_0))\right]Cov(\hat\theta)\right),
+\end{align}
+which is developed from two quadratic approximations \ref{eq:quadratic approximation} of the loss $l$ about $\theta_0$ and $\hat\theta$.
+The approximation is applicable when the loss is appropriately differentiable in $\theta$, and $\hat\theta$ is a consistent estimator.
+In the case of AIC, the true model $g$ is assumed as an interior point in the space of $\theta$.
+Under this assumption, the covariance in \eqref{eq:ic-fundamental-equation} is the inverse of the expected hessian. Thus the right hand side of \eqref{eq:ic-fundamental-equation} reduces to the number of dimensions of $\theta$, say $d$.
+If $g$ is not assumed to be an interior point, the Sandwich-estimator due to Huber \citep{huber1967behavior} can be used for the covariance.
+The trace in \eqref{eq:ic-fundamental-equation} then gives $C(\hat\theta)\approx\texttt{tr}(J(\theta_0)^{-1}I(\theta_0))$, and estimation of these as discussed in \ref{sec:distribution of estimated parameters} results in TIC and NIC.
+Notice that \eqref{eq:ic-fundamental-equation} is not directly applicable to the tree-models at different stages of Algorithm \ref{alg:recursive-binary-splitting}.
+This is because $l$ is generally not differentiable in the different split points being profiled over to maximize reduction in loss.
+
+Finally, note the existence of many other information criteria, that may seek to improve on the above mentioned criteria, or that targets other objectives than KLD and expected generalization loss. Notorious is the Corrected Akaike Information Criterion (also known as AICc) \citep{sugiura1978further}, the Bayesian information criterion (known as BIC) \citep{schwarz1978estimating}, which may also be developed using a quadratic approximation together with a close-cousin of the SPA called the Laplace approximation, and the Focused Information Criterion (FIC) \citep{claeskens2003focused}.
+Finally, note also the existence of the cross-validation Copula Information Criterion, developed from theoretical results in relation to $n$-fold CV \citep{gronneberg2014copula}.
+See \citet{claeskens2008model} for an overview of model selection. 

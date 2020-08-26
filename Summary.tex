@@ -1,0 +1,27 @@
+\chapter{Summary of the papers}
+% PAPER I
+
+The first paper of the thesis, "Saddlepoint adjusted inversion of characteristic functions", written in collaboration with the professors Tore Selland Kleppe and Hans Julius Skaug, develops the SPA through exponential tilting in the time-domain side of the Fourier transform. 
+This development admits a deconstruction of the density of some random variable $X$ as the SPA and the density of a standardized random variable $Z$ evaluated at zero. The variable $Z$ is specified through its CGF $K_Z(s)$, a function of the CGF of $X$.
+The representation of $p_X$ is exact, and necessarily takes care of issues regarding renormalization and unimodality of the SPA.
+Furthermore, as evaluation of the density of $Z$ is only necessary at the, by-design, high-density point zero, inversion using quadrature is accurate and does not suffer from the numerical issues illustrated in Figure \ref{fig:ift-direct-fail}. This is true also at low-density regions of $X$ where the SPA typically will dominate.
+The methodology is illustrated using the Negative Inverse Gaussian distribution, and applied to financial data through the Merton Jump Diffusion model.
+
+
+% PAPER II
+In the second paper, "An information criterion for automatic gradient tree boosting", written in collaboration with the professors Tore Selland Kleppe and Hans Julius Skaug, an information criterion is constructed that takes into consideration the optimism induced into the training loss by the greedy recursive binary splitting in Algorithm \ref{alg:recursive-binary-splitting}.
+% for automatic gradient tree boosting is constructed.
+The bias \eqref{eq:information criterion bias} is found by relating the asymptotic dynamics of the loss under split-profiling, to that of a Cox-Ingersoll-Ross process (CIR).
+The asymptotic normality \eqref{eq:parameters-asymptotic-normality} of estimators is key to establish a familiar continuous-time stochastic process, and eventually the CIR, that makes it possible to build upon the approximate equation \eqref{eq:ic-fundamental-equation} for generalization-loss based information criteria.
+Finally, to take into consideration the optimism induced by selecting the maximum reduction in loss over features $j$ in Algorithm \ref{alg:recursive-binary-splitting}, extreme-value theory is employed.
+The criterion is built into an algorithm for gradient tree boosting which is automatic, removing hyperparameters such as the number of boosting iterations $K$ and constraints regularizing trees.
+The underlying assumptions are tested on simulated data, and the algorithm is validated on a collection of real data by measuring both speed and accuracy versus comparative methodologies.
+
+
+% PAPER III
+The third paper, "agtboost: Adaptive and Automatic Gradient Tree Boosting Computations", written in collaboration with professor Tore Selland Kleppe, focuses
+on the implementation of the theory in Paper \Romannum{2} in an R-package named agtboost. 
+In addition, the paper propose a modification of the splitting procedure in Algorithm \ref{alg:recursive-binary-splitting}, to be more adept to gradient boosting by taking into consideration the possible root-split produced in the coming boosting iteration.
+Usage of agtboost is illustrated, and its behaviour on the large Higgs dataset is measured.
+%Results suggests superior performance of agtboost versus the default settings of xgboost.
+The agtboost package lowers the theoretical and practical threshold for users to employ gradient tree boosting, as detailed knowledge on hyperparameter tuning and setting up $k-$fold CV in code no longer is a necessity.

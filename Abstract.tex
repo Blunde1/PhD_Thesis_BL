@@ -6,25 +6,18 @@
 \hbadness=10000
 
 Advanced statistical computations have become increasingly important, as with the increased flexibility of models capturing complex relationships in new data and use-cases,
-% later years has seen a surge in availability of data, use-cases and models.
-%Ultimately, this has lead to the branding of a new field now called data science.
-%However, with increased flexibility of models to be able to capture complex structural relationship in data, 
 comes increased difficulties of fitting procedures for the models.
 For example if the model is complex, involving multiple sources of randomness, then the probability density function used in maximum likelihood estimation typically does not have a closed form.
-On the other hand, in regression type problems the closed form of the conditional distribution of the response is often known. However, the relationship between features and response can be complex, high dimensional and is generally unknown, motivating non-parametric procedures with new sets of fitting problems.
-% motivating boosting procedures is often straight-forward the conditional model can be relatively straight-forward
-%This motivates non-parametric procedures such as gradient tree boosting, but which comes with new sets of problems of model selection which currently only have computationally expensive solutions.
+On the other hand, in regression type problems the closed form of the assumed conditional distribution of the response is often known. However, the relationship between features and response can be complex, high dimensional and is generally unknown, motivating non-parametric procedures that come with new sets of fitting problems.
 
 
 This thesis explores techniques utilizing the local curvature of objective functions, and using the information inherent in this local curvature, to create more stable and automatic fitting procedures.
 In the first paper, a saddlepoint adjusted inverse Fourier transform is proposed.
-The method performs arbitrarily accurate numerical inversion, even in the tails of the distribution.
-% in a manner that allows accurate evaluations of log-probability far out in the tails, and which can be made arbitrarily accurate overall. 
+The method performs accurate numerical inversion, even in the tails of the distribution.
 This allow practitioners to specify their models in terms of the characteristic function which often exists in closed form.
-%, which is particularly attractive, as it often exists in closed form, even for models with more than one source of randomness.
-The second paper proposes an information criterion for the node-splits, after greedy binary splitting, in gradient boosted trees.
-This removes the need for computationally expensive cross validation and expert opinions in tuning hyperparameters associate gradient tree boosting.
-The third paper focuses on the implementation of the theory presented in the second paper into the R-package aGTBoost, and also builds on the information criterion to suggest an adjustment of ordinary greedy-binary-splitting, adapted to gradient tree boosting.
+The second paper proposes an information criterion for the node-splits, after greedy recursive binary splitting, in gradient boosted trees.
+This alleviates the need for computationally expensive cross validation and expert opinions in tuning hyperparameters associate gradient tree boosting.
+The third paper focuses on the implementation of the theory presented in the second paper into the R package agtboost, and also builds on the information criterion to suggest an adjustment of ordinary greedy recursive binary splitting, better suited to gradient tree boosting.
 
 %Adaptivity of methods are important!
 
