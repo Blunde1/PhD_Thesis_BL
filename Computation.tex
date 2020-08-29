@@ -1,0 +1,19 @@
+\chapter{Computational remarks}
+\label{chap:computation}
+
+The previous chapters have focused on the theoretical basis for the papers \Romannum{1}-\Romannum{3}.
+A large part of the concluded research has been of a computational nature, and hence, certain key components of these computations deserve a mention.
+Also, reproducing the research without knowledge of these (or related) components may seem a Herculean task to the author.
+
+For the most part, the theory of papers \Romannum{1}-\Romannum{3} has been implemented in the programming 
+languages R \citep{Rlanguage2018} and C++ \citep{stroustrup2000cpp}.
+Typically, early exploration and treatment of data has been done in R, while the heavy lifting has been
+done by C++.
+Interplay between C++ and R is seamless due to the R package Rcpp \citep{rcpp2011R} and the amazing functionality of Rcpp modules.
+The R package TMB \citep{kristensen2016tmb}, similarly as Rcpp, allow for the evaluation of C++ functions in R, but also comes with the powerful tools of automatic differentiation, to the delight of users.
+On the C++ side, the research has made extensive use of the linear algebra library Eigen \citep{eigenweb},
+and the automatic differentiation library Adept \citep{hogan2014fast}.
+The functionality of the R package ggplot2 \citep{wickham2016ggplot} in combination with the
+R packages tidyverse \citep{wickham2017tidyverse} and data.table \citep{dowle2019datatable}
+has been taken advantage of to create figures for papers \Romannum{1}-\Romannum{3}.
+

@@ -23,6 +23,7 @@
 
 \pagestyle{plain} % Set page style to plain
 \geometry{a4paper,left=44mm,right=44mm,top=52mm,bottom=58mm,headsep=18pt,headheight=14pt}
+%\geometry{a4paper,left=44mm,right=22mm,top=52mm,bottom=58mm,headsep=18pt,headheight=14pt}
 
 %%%%%%%%%%%%%%%%%%%%%%% TOPMATTER VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
@@ -117,7 +118,8 @@
   \renewcommand{\headrulewidth}{0.1pt}% Header lines visible
   \fancyheadoffset[L]{0pt} % Header lines respect margins
   \fancyhead[C]{\fontsize{11}{13}\itshape\nouppercase{\leftmark}}
-  \fancyfoot[C]{\thepage}
+  %\fancyfoot[C]{\thepage}
+  \fancyhead[LE,RO]{\thepage}
 }
 
 % Set page counter

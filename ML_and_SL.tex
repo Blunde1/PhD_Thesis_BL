@@ -1,4 +1,5 @@
 \chapter{Maximum likelihood and supervised learning}
+\label{chap:ml-and-sl}
 
 Maximum likelihood estimation and supervised learning are briefly introduced in an informal manner. %as the fundamental problems motivating the work presented in this thesis.
 This is done to provide motivation and understanding of the fundamental objectives for the numerical algorithms that are presented and improved upon in this thesis.
@@ -10,31 +11,34 @@ This is done to provide motivation and understanding of the fundamental objectiv
 
 \section{Maximum likelihood estimation}
 
-Let $\mathbf{x}$ denote an $n$-dimensional vector of observations from a parametric distribution, with density denoted $p(\mathbf{x};\theta_0)$, where $\theta_0\in \Theta,~\Theta\subseteq \mathrm{R}^p$ is a $p$-dimensional vector.
-It is often the case that a reasonable parametric family of functions, $p(\mathbf{x};\theta),~\theta\in \Theta$, can be inferred from the problem and from inspection of the data.
-However, $\theta_0$ will be unknown, and it is reasonable to estimate it using the observed data $\mathbf{x}$.
+Let $\mathbf{y}$ denote an $n$-dimensional vector of observations from a parametric distribution, with density denoted $p_Y(\mathbf{y};\theta_0)$, where $\theta_0\in \Theta,~\Theta\subseteq \mathrm{R}^p$ is a $p$-dimensional vector.
+It is often the case that a reasonable parametric family of functions, $p_Y(\mathbf{y};\theta),~\theta\in \Theta$, can be inferred from the problem and from inspection of the data.
+However, $\theta_0$ will be unknown, and it is reasonable to estimate it using the observed data $\mathbf{y}$.
 To this end, maximum likelihood estimation is a popular approach.
 The maximum likelihood estimate (MLE) is the value of $\theta$ in $\Theta$ which maximizes the probability of the data, i.e. the likelihood.
 Equivalently, the value of $\theta$ that minimizes the negative log likelihood
 \begin{align}\label{eq:mle}
-	\hat{\theta} = \arg\min_\theta \{-\log p(\mathbf{x};\theta)\}.
+	\hat{\theta} = \arg\min_\theta \{-\log p_Y(\mathbf{y};\theta)\}.
 \end{align}
-The maximum likelihood estimate, $\hat{\theta}$, is under suitable regularity conditions, the asymptotically unbiased minimum variance estimate, and asymptotically normal.
+The maximum likelihood estimate, $\hat{\theta}$, is under suitable regularity conditions asymptotically unbiased, efficient, and asymptotically normal.
 See \citet{vanDerVaart} for a treatment of their asymptotic properties.
 
 
 \section{Supervised learning}
 
-The supervised learning objective is perhaps easiest stated as "regression", but also bears resemblance to maximum likelihood estimation.
-Assume now that $\mathbf{x}\in R^{n\times m}$ is a matrix of $m$ covariates or features for $n$ observations. Let $y\in R^n$ be an $n$-vector of response observations.
-In general, individual response observations, $y_i,~i=1\dots n$, could also be multidimensional, but throughout this thesis they are assumed one-dimensional.
+The supervised learning objective is perhaps easiest stated as a "regression" type objective, but also bears resemblance to maximum likelihood estimation.
+Assume now that there is access to a dataset
+$\{y_i,\features_i\}_{i=1}^n$
+consisting of $n$ observations of a response $y_i\in R$ and $m$ features (or covariates) $\features_i\in R^{m}$ that are indexed by $i$.
+%$\mathbf{x}\in R^{n\times m}$ is a matrix of $m$ covariates or features for $n$ observations. Let $y\in R^n$ be an $n$-vector of response observations.
+In general, individual response observations, $y_i$, could also be multidimensional, but throughout this thesis they are assumed one-dimensional.
 Let $\hat{y}_i$ be a prediction for $y_i$ and let the loss function $l(y_i,\hat{y}_i)$ be a function measuring the difference between a response and its prediction.
-The supervised learning objective is to find the best possible predictive function, $f(x)=\hat{y}$, which takes a feature vector (row-vector of $\mathbf{x}$) as its argument, and outputs a prediction $\hat{y}$. "Best possible" is here in reference to the loss, $l$, over observations not part of the training data $(\mathbf{x},y)$.
+The supervised learning objective is to find the best possible predictive function, $f(\features)=\hat{y}$, which takes a feature vector as its argument, and outputs a prediction $\hat{y}$. "Best possible" is here in reference to the loss, $l$, over observations not part of the dataset $\{y_i,\features_i\}_{i=1}^n$ used to fit or learn $f$, called the "training" data.
 More formally, we seek $f$ so that
 \begin{align}\label{eq:supervised objective}
-	\hat{f} = \arg\min_f \left\{ E\left[l(y^0, f(x^0))\right] \right\},
+	\hat{f} = \arg\min_f \left\{ E\left[l(y^0, f(\features^0))\right] \right\},
 \end{align} 
-where the superscripts of $(y^0, x^0)$ indicate an observation of a response and feature vector unseen in the training data, and $E$ denotes the expectation.
+where the superscripts of $(y^0, \features^0)$ indicate an observation of a response and feature vector unseen in the training data, and $E$ denotes the expectation.
 Notice that, if the search is constrained over a parametric family of functions indexed by $\theta\in\Theta$, and the loss function is taken to be the negative log-likelihood, $l=-\log p$, then the supervised learning objective is closely related to the objective of maximum likelihood estimation \eqref{eq:mle} in a regression setting.
 In fact, the objective in \eqref{eq:mle} scaled with $n^{-1}$ will then be the sample estimator of the expected value in \eqref{eq:supervised objective}, but biased downwards in expectation, as evaluation is done over observations in the training set.
 % evaluated over observations not part of the training data.

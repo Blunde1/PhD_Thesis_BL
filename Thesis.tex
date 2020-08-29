@@ -1,6 +1,11 @@
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage{Thesis_template}
 
+%\usepackage{fancyhdr}
+%\pagestyle{fancy}
+%\fancyhf{}
+%\fancyhead[R]{\thepage}
+
 \newcommand\PaperTitleOne{Saddlepoint-adjusted inversion of characteristic functions}
 \newcommand\PaperTitleTwo{An information criterion for automatic gradient tree boosting}
 \newcommand\PaperTitleThree{agtboost: Adaptive and Automatic Gradient Tree Boosting Computations}
@@ -21,6 +26,8 @@
 \newfloat{algorithm}{tbp}{loa}
 \providecommand{\algorithmname}{Algorithm}
 \floatname{algorithm}{\protect\algorithmname}
+
+\newcommand{\features}{\ensuremath{\mathbf{x}}}
 
 \begin{document}
 
@@ -76,6 +83,7 @@
 \includeChapter{Introduction}
 \includeChapter{ML_and_SL}
 \includeChapter{Quadratics}
+\includeChapter{Computation}
 \includeChapter{Summary}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -89,17 +97,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAPER I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \insertPaper{I}{\PaperTitleOne}
-\includepdf[pages=-,scale=0.74,offset=0mm 10mm,pagecommand={\thispagestyle{plain}}]{papers/Paper1.pdf}
+\includepdf[pages=-,scale=0.74,offset=0mm 0mm,pagecommand={\thispagestyle{plain}}]{papers/Paper1.pdf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAPER II %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \insertPaper{II}{\PaperTitleTwo}
-\includepdf[pages=-,scale=0.74,offset=0mm 10mm,pagecommand={\thispagestyle{plain}}]{papers/Paper2.pdf}
+%\includepdf[pages=-,scale=0.74,offset=0mm -10mm,pagecommand={\thispagestyle{plain}}]{papers/Paper2.pdf}
+\includepdf[pages=-,scale=0.74,offset=0mm 0mm,pagecommand={\thispagestyle{plain}}]{papers/Paper2.pdf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAPER III %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \insertPaper{III}{\PaperTitleThree}
-\includepdf[pages=-,scale=0.74,offset=0mm 10mm,pagecommand={\thispagestyle{plain}}]{papers/Paper3.pdf}
+\includepdf[pages=-,scale=0.74,offset=0mm 0mm,pagecommand={\thispagestyle{plain}}]{papers/Paper3.pdf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAPER IV %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

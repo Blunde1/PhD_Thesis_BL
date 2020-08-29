@@ -8,13 +8,14 @@ The goal of this thesis is to further the usability of computational methods in 
 The main approach of the present work is to, in some loose and wide sense, approximate some objective function with a local quadratic approximation to either solve stability issues, create dynamic step-lengths, or measure the uncertainty of estimators.
 %The technique of such local quadratic approximations in statistics dates back to the usage of the Newton-Raphson algorithm in fitting procedures for maximum-likelihood estimation.
 %As for this classical case, 
-The hope is then that the iterative methods that the local quadratic approximation is somehow applied to, will see an increased adaptivity to individual data and problems, and corresponding decrease in manual tuning performed before application to the problem at hand.
+The hope is that the iterative methods that the local quadratic approximation is somehow applied to, will see an increased adaptivity to individual data and problems and correspondingly decrease the manual tuning performed.
+%, and corresponding decrease in manual tuning performed before application to the problem at hand.
 %, and corresponding increased adaptivity to individual data and problems.
 
 The first part of this thesis will give a brief and informal introduction to the concepts and techniques that are used in papers \Romannum{1}-\Romannum{3}.
-The basis is the objectives of maximum likelihood and supervised learning, which are presented in the first section.
-The second section introduces the local quadratic approximation, and showcase it in the relevant use-cases for papers \Romannum{1}-\Romannum{3}, i.e. maximum-likelihood numerical optimization, the saddlepoint approximation, gradient tree boosting, asymptotic theory and model selection.
-The final section summarises the papers of the thesis.
+The basis is the objectives of maximum likelihood and supervised learning, which are presented in the Section \ref{chap:ml-and-sl}.
+Section \ref{chap:quadratics} introduces the local quadratic approximation and showcase it in the relevant use-cases for papers \Romannum{1}-\Romannum{3}, i.e. maximum-likelihood numerical optimization, the saddlepoint approximation, gradient tree boosting, some asymptotic theory and model selection.
+Section \ref{chap:computation} gives a summary of the important computational frameworks for this thesis, while Section \ref{chap:summary} summarises the papers of the thesis.
 % are presented as the methods under investigation for this thesis, 
 %This includes 2'nd order quadratic approximations, and its use-cases in the saddlepoint approximation, gradient boosting and asymptotic theory.
 %
