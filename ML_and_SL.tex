@@ -21,7 +21,7 @@ Equivalently, the value of $\theta$ that minimizes the negative log likelihood
 	\hat{\theta} = \arg\min_\theta \{-\log p_Y(\mathbf{y};\theta)\}.
 \end{align}
 The maximum likelihood estimate, $\hat{\theta}$, is under suitable regularity conditions asymptotically unbiased, efficient, and asymptotically normal.
-See \citet{vanDerVaart} for a treatment of their asymptotic properties.
+See \citet{vanDerVaart} for a treatment of asymptotic properties.
 
 
 \section{Supervised learning}
@@ -33,12 +33,12 @@ consisting of $n$ observations of a response $y_i\in R$ and $m$ features (or cov
 %$\mathbf{x}\in R^{n\times m}$ is a matrix of $m$ covariates or features for $n$ observations. Let $y\in R^n$ be an $n$-vector of response observations.
 In general, individual response observations, $y_i$, could also be multidimensional, but throughout this thesis they are assumed one-dimensional.
 Let $\hat{y}_i$ be a prediction for $y_i$ and let the loss function $l(y_i,\hat{y}_i)$ be a function measuring the difference between a response and its prediction.
-The supervised learning objective is to find the best possible predictive function, $f(\features)=\hat{y}$, which takes a feature vector as its argument, and outputs a prediction $\hat{y}$. "Best possible" is here in reference to the loss, $l$, over observations not part of the dataset $\{y_i,\features_i\}_{i=1}^n$ used to fit or learn $f$, called the "training" data.
+The supervised learning objective is to find the best possible predictive function, $f(\features)=\hat{y}$, which takes a feature vector as its argument, and outputs a prediction $\hat{y}$. "Best possible" is here in reference to the loss, $l$, over observations not part of the "training" dataset $\{y_i,\features_i\}_{i=1}^n$ used to fit or learn $f$.
 More formally, we seek $f$ so that
 \begin{align}\label{eq:supervised objective}
 	\hat{f} = \arg\min_f \left\{ E\left[l(y^0, f(\features^0))\right] \right\},
 \end{align} 
 where the superscripts of $(y^0, \features^0)$ indicate an observation of a response and feature vector unseen in the training data, and $E$ denotes the expectation.
 Notice that, if the search is constrained over a parametric family of functions indexed by $\theta\in\Theta$, and the loss function is taken to be the negative log-likelihood, $l=-\log p$, then the supervised learning objective is closely related to the objective of maximum likelihood estimation \eqref{eq:mle} in a regression setting.
-In fact, the objective in \eqref{eq:mle} scaled with $n^{-1}$ will then be the sample estimator of the expected value in \eqref{eq:supervised objective}, but biased downwards in expectation, as evaluation is done over observations in the training set.
+In fact, the objective in \eqref{eq:mle} scaled with $n^{-1}$ will then be a sample estimator of the expected value in \eqref{eq:supervised objective}, but biased downwards in expectation, as evaluation is done over observations in the training set.
 % evaluated over observations not part of the training data.
